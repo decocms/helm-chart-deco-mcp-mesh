@@ -1,0 +1,140 @@
+# Default values for chart-deco-mcp-mesh.
+replicaCount: 1
+
+strategy:
+  # type: ""  # Deixe vazio para auto-detecção:
+  #   - RollingUpdate: se database.engine=postgresql OU persistence.distributed=true OU accessMode=ReadWriteMany
+  #   - Recreate: se SQLite com ReadWriteOnce (padrão)
+  # rollingUpdate:
+  #   maxSurge: 1
+  #   maxUnavailable: 0
+
+image:
+  repository: ghcr.io/decocms/admin/mesh
+  pullPolicy: Always
+  tag: "sha256:025fd2ae98090f78c51950f6e5c186de58ba1091feb4a1088ad3110b46c3b20e"  # Digest SHA256 para versão fixa
+
+podSecurityContext:
+  fsGroup: 1001
+  fsGroupChangePolicy: "OnRootMismatch"
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+resources:
+  requests:
+    memory: "300Mi"
+    cpu: "250m"
+  limits:
+    memory: "600Mi"
+    cpu: "500m"
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 4
+
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 6
+  #targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+configMap:
+  meshConfig:
+    NODE_ENV: "production"
+    PORT: "3000"
+    HOST: "0.0.0.0"
+    BETTER_AUTH_URL: "https://mesh-admin.decocms.com"  # Adjust port if using different port-forward port
+    BASE_URL: "https://mesh-admin.decocms.com"  # Adjust port if using different port-forward port
+  
+  authConfig:
+    emailAndPassword:
+      enabled: true
+
+secret:
+  # IMPORTANT: Change this to a secure random string in production (at least 32 chars)
+  # Generate with: openssl rand -base64 32
+  BETTER_AUTH_SECRET: "change-this-to-a-secure-random-string-at-least-32-chars"
+
+database:
+  engine: sqlite # sqlite | postgresql
+  url: ""        # Obrigatório quando engine=postgresql
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  storageClass: "gp3"  # Empty string uses default storage class.
+  size: 10Gi
+  claimName: ""  # Optional: specify existing PVC name
+  distributed: false  # Marque como true se o storage oferecer ReadWriteMany
+
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector:
+  kubernetes.io/arch: amd64
+
+tolerations: []
+# Exemplo:
+# tolerations:
+#   - key: "env"
+#     operator: "Equal"
+#     value: "dev"
+#     effect: "NoSchedule"
+
+affinity: {}
+# Exemplo:
+# affinity:
+#   podAntiAffinity:
+#     preferredDuringSchedulingIgnoredDuringExecution:
+#       - weight: 100
+#         podAffinityTerm:
+#           labelSelector:
+#             matchLabels:
+#               app.kubernetes.io/name: chart-deco-mcp-mesh
+#           topologyKey: kubernetes.io/hostname
+
+# Topology Spread Constraints (opcional - deixe vazio [] para desabilitar)
+# IMPORTANTE: labelSelector é obrigatório quando topologySpreadConstraints está configurado
+#topologySpreadConstraints: []
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: chart-deco-mcp-mesh
+        app.kubernetes.io/instance: deco-mcp-mesh
