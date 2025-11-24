@@ -6,8 +6,4 @@ metadata:
     {{- include "chart-deco-mcp-mesh.labels" . | nindent 4 }}
 data:
   auth-config.json: |
-    {
-      "emailAndPassword": {
-        "enabled": {{ .Values.configMap.authConfig.emailAndPassword.enabled }}
-      }
-    }
+{{ .Values.configMap.authConfig | toJson | indent 4 }}
