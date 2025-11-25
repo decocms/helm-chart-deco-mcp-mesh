@@ -38,7 +38,7 @@ Este Helm Chart encapsula todos os recursos Kubernetes necessários para executa
 
 ## 📦 Pré-requisitos
 
-- Kubernetes 1.19+
+- Kubernetes 1.32+
 - Helm 3.0+
 - `kubectl` configurado para acessar o cluster
 - StorageClass configurada (para PVC)
@@ -52,7 +52,7 @@ Este Helm Chart encapsula todos os recursos Kubernetes necessários para executa
 helm install deco-mcp-mesh .
 
 # Instalar em um namespace específico
-helm install deco-mcp-mesh . --namespace mesh --create-namespace
+helm install deco-mcp-mesh . --namespace deco-mcp-mesh --create-namespace
 
 # Instalar com valores customizados
 helm install deco-mcp-mesh . -f meu-values.yaml
@@ -345,10 +345,32 @@ auth-config.json: |
 ### 6. `secret.yaml` - Secret
 
 ```yaml
+{{- if not .Values.secret.secretName }}
+apiVersion: v1
+kind: Secret
+...
 stringData:
   BETTER_AUTH_SECRET: {{ .Values.secret.BETTER_AUTH_SECRET | quote }}
+{{- end }}
 ```
-- Usa `stringData` (Helm codifica automaticamente para base64)
+
+#### Lógica de Criação do Secret
+
+O chart suporta dois cenários de gerenciamento de secrets:
+
+1. **Criar novo Secret** (padrão):
+   - Se `secret.secretName` estiver vazio ou não definido, cria um novo Secret
+   - Usa `stringData` (Helm codifica automaticamente para base64)
+   - Nome do Secret: `{{ release-name }}-secrets`
+
+2. **Usar Secret existente**:
+   - Se `secret.secretName` estiver definido, **não cria** um novo Secret
+   - O Deployment referencia o Secret existente especificado em `secretName`
+   - Útil para usar secrets gerenciados por External Secrets Operator, Sealed Secrets, etc.
+
+**Resumo da lógica**:
+- Se `secret.secretName` vazio/indefinido → **cria** novo Secret
+- Se `secret.secretName` definido → **não cria** Secret, apenas referencia o existente
 
 ### 7. `pvc.yaml` - PersistentVolumeClaim
 
@@ -585,19 +607,65 @@ configMap:
   authConfig:
     emailAndPassword:
       enabled: true
+    socialProviders:
+      google:
+        clientId: "your-google-client-id.apps.googleusercontent.com"
+        clientSecret: "your-google-client-secret"
+      github:
+        clientId: "your-github-client-id"
+        clientSecret: "your-github-client-secret"
+    saml:
+      enabled: false
+      providers: []
+    emailProviders:
+      - id: "resend-primary"
+        provider: "resend"
+        config:
+          apiKey: "your-resend-api-key"
+          fromEmail: "noreply@example.com"
+    inviteEmailProviderId: "resend-primary"
+    magicLinkConfig:
+      enabled: true
+      emailProviderId: "resend-primary"
 ```
 
 ### Secret
 
-```yaml
-secret:
-  BETTER_AUTH_SECRET: "change-this-to-a-secure-random-string-at-least-32-chars"
-```
+O chart suporta três cenários de gerenciamento de secrets:
+
+1. **Criar novo Secret** (padrão):
+   ```yaml
+   secret:
+     secretName: ""  # ou omitir
+     BETTER_AUTH_SECRET: "change-this-to-a-secure-random-string-at-least-32-chars"
+   ```
+   - Cria um novo Secret com o nome `{{ release-name }}-secrets`
+   - Usa os valores definidos em `secret` (BETTER_AUTH_SECRET e opcionalmente DATABASE_URL para PostgreSQL)
+
+2. **Usar Secret existente**:
+   ```yaml
+   secret:
+     secretName: "meu-secret-existente"  # Nome do secret que já existe no cluster
+     # BETTER_AUTH_SECRET não é necessário quando usando secret existente
+   ```
+   - **Não cria** um novo Secret
+   - Referencia o Secret existente especificado em `secretName`
+   - O Secret existente deve conter as chaves necessárias:
+     - `BETTER_AUTH_SECRET` (obrigatório)
+     - `DATABASE_URL` (obrigatório apenas se `database.engine=postgresql`)
+   - Útil para usar secrets gerenciados por External Secrets Operator, Sealed Secrets, ou outros sistemas
+
+3. **Sem Secret** (não suportado):
+   - O Secret é sempre necessário para `BETTER_AUTH_SECRET`
 
 **⚠️ Importante**: Gere um secret seguro:
 ```bash
 openssl rand -base64 32
 ```
+
+**Resumo da lógica**:
+- Se `secret.secretName` vazio/indefinido → **cria** novo Secret
+- Se `secret.secretName` definido → **não cria** Secret, apenas referencia o existente
 
 ### Security Context
 
@@ -811,6 +879,38 @@ helm install meu-mesh .
 helm install meu-mesh . \
   --set fullnameOverride=mesh-customizado
 ```
+
+### Exemplo 7: Deploy com Secret Existente
+
+```yaml
+# existing-secret-values.yaml
+secret:
+  secretName: "external-secrets-operator-secret"  # Nome do secret que já existe no cluster
+  # BETTER_AUTH_SECRET não é necessário quando usando secret existente
+  # O secret existente deve conter as chaves:
+  #   - BETTER_AUTH_SECRET (obrigatório)
+  #   - DATABASE_URL (obrigatório apenas se database.engine=postgresql)
+```
+
+```bash
+# O Secret deve existir antes de instalar o chart
+kubectl get secret external-secrets-operator-secret
+
+# Verificar se contém as chaves necessárias
+kubectl get secret external-secrets-operator-secret -o jsonpath='{.data}' | jq 'keys'
+
+# Instalar usando o Secret existente
+helm install mesh . -f existing-secret-values.yaml
+
+# O Deployment será criado referenciando o Secret existente
+# Nenhum novo Secret será criado por este chart
+```
+
+**Quando usar**:
+- Usar secrets gerenciados por External Secrets Operator
+- Usar Sealed Secrets ou outros sistemas de gerenciamento de secrets
+- Compartilhar secrets entre diferentes releases do Helm
+- Usar secrets criados manualmente ou por outros processos
 
 ## 🔄 Manutenção e Atualização
 

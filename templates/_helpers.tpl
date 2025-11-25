@@ -148,3 +148,15 @@ RollingUpdate
 Recreate
 {{- end -}}
 {{- end }}
+
+{{/*
+Returns the secret name to use. If secret.secretName is defined, uses it.
+Otherwise, uses the generated name.
+*/}}
+{{- define "chart-deco-mcp-mesh.secretName" -}}
+{{- if .Values.secret.secretName -}}
+{{- .Values.secret.secretName | trim -}}
+{{- else -}}
+{{- include "chart-deco-mcp-mesh.fullname" . }}-secrets
+{{- end -}}
+{{- end }}

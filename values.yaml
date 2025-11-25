@@ -12,7 +12,6 @@ strategy:
 image:
   repository: ghcr.io/decocms/admin/mesh
   pullPolicy: Always
-  tag: "sha256:025fd2ae98090f78c51950f6e5c186de58ba1091feb4a1088ad3110b46c3b20e"  # Digest SHA256 para versão fixa
 
 podSecurityContext:
   fsGroup: 1001
@@ -77,6 +76,7 @@ configMap:
       enabled: true
 
 secret:
+  # secretName: ""  # Se definido, usa este secret existente (não cria novo secret)
   # IMPORTANT: Change this to a secure random string in production (at least 32 chars)
   # Generate with: openssl rand -base64 32
   BETTER_AUTH_SECRET: "change-this-to-a-secure-random-string-at-least-32-chars"

@@ -78,13 +78,13 @@ spec:
             - name: BETTER_AUTH_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-secrets
+                  name: {{ include "chart-deco-mcp-mesh.secretName" . }}
                   key: BETTER_AUTH_SECRET
             - name: DATABASE_URL
               {{- if eq (lower (default "sqlite" .Values.database.engine)) "postgresql" }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-secrets
+                  name: {{ include "chart-deco-mcp-mesh.secretName" . }}
                   key: DATABASE_URL
               {{- else }}
               valueFrom:
