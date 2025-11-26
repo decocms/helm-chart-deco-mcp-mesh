@@ -738,6 +738,23 @@ volumeMounts: []
 #   readOnly: true
 ```
 
+### Containers Extras no Pod
+
+Você pode adicionar containers extras ao Pod (como sidecars, proxies, etc.) sem remover o container padrão da aplicação.  
+O chart sempre mantém o container principal e **concatena** o que for definido em `extraContainers`:
+
+```yaml
+extraContainers: []
+# - name: cloudsql-proxy
+#   image: gcr.io/cloudsql-docker/gce-proxy:1.33.1
+#   args:
+#     - "/cloud_sql_proxy"
+#     - "-instances=PROJECT:REGION:INSTANCE=tcp:5432"
+```
+
+- Se `extraContainers` não for definido ou estiver vazio, o Pod terá apenas o container padrão (comportamento atual).
+- Se você definir `extraContainers`, todos esses containers serão adicionados ao mesmo Pod junto com o container principal.
+
 ### ServiceAccount
 
 ```yaml

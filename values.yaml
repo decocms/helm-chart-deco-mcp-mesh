@@ -99,6 +99,13 @@ volumes: []
 #     secretName: mysecret
 #     optional: false
 
+extraContainers: []
+# - name: cloudsql-proxy
+#   image: gcr.io/cloudsql-docker/gce-proxy:1.33.1
+#   args:
+#     - "/cloud_sql_proxy"
+#     - "-instances=PROJECT:REGION:INSTANCE=tcp:5432"
+
 volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
