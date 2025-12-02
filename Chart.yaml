@@ -3,4 +3,4 @@ name: chart-deco-mcp-mesh
 description: A Helm chart for deco-mcp-mesh self-hosted deployment
 type: application
 version: 0.1.0
-appVersion: "latest"
+appVersion: "0.1.24"
