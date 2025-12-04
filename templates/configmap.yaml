@@ -10,7 +10,14 @@ data:
   HOST: {{ .Values.configMap.meshConfig.HOST | quote }}
   BETTER_AUTH_URL: {{ .Values.configMap.meshConfig.BETTER_AUTH_URL | quote }}
   BASE_URL: {{ .Values.configMap.meshConfig.BASE_URL | quote }}
+  {{- if .Values.configMap.meshConfig.DATABASE_PG_SSL }}
+  DATABASE_PG_SSL: {{ .Values.configMap.meshConfig.DATABASE_PG_SSL | quote }}
+  {{- end }}
+  {{- if and .Values.configMap.meshConfig.NODE_EXTRA_CA_CERTS .Values.database.caCert }}
+  NODE_EXTRA_CA_CERTS: {{ .Values.configMap.meshConfig.NODE_EXTRA_CA_CERTS | quote }}
+  {{- end }}
   {{- if ne (lower (default "sqlite" .Values.database.engine)) "postgresql" }}
   # DATABASE_URL só vai no ConfigMap quando for SQLite (caminho do arquivo, não sensível)
   DATABASE_URL: {{ include "chart-deco-mcp-mesh.databaseUrl" . | trim | quote }}
+
   {{- end }}

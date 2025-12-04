@@ -97,6 +97,20 @@ spec:
                 configMapKeyRef:
                   name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
                   key: BASE_URL
+            {{- if .Values.configMap.meshConfig.DATABASE_PG_SSL }}
+            - name: DATABASE_PG_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+                  key: DATABASE_PG_SSL
+            {{- end }}
+            {{- if and .Values.configMap.meshConfig.NODE_EXTRA_CA_CERTS .Values.database.caCert }}
+            - name: NODE_EXTRA_CA_CERTS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+                  key: NODE_EXTRA_CA_CERTS
+            {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -116,6 +130,11 @@ spec:
               readOnly: true
             - name: data
               mountPath: /app/data
+            {{- if and (eq (lower (default "sqlite" .Values.database.engine)) "postgresql") .Values.database.caCert }}
+            - name: ca-cert
+              mountPath: /etc/ssl/certs
+              readOnly: true
+            {{- end }}
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -129,6 +148,14 @@ spec:
             items:
               - key: auth-config.json
                 path: auth-config.json
+        {{- if and (eq (lower (default "sqlite" .Values.database.engine)) "postgresql") .Values.database.caCert }}
+        - name: ca-cert
+          configMap:
+            name: {{ include "chart-deco-mcp-mesh.fullname" . }}-ca-cert
+            items:
+              - key: ca-cert.pem
+                path: ca-cert.pem
+        {{- end }}
         {{- if .Values.persistence.enabled }}
         - name: data
           {{- if .Values.persistence.claimName }}
