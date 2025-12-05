@@ -1,6 +1,6 @@
 # Helm Chart: chart-deco-mcp-mesh
 
-Helm Chart para deploy da aplicação MCP Mesh (Deco CMS) no Kubernetes. Este chart fornece uma solução completa e parametrizável para deploy da aplicação com suporte a persistência, autenticação, autoscaling e muito mais.
+Este chart fornece uma solução completa e parametrizável para deploy da aplicação com suporte a persistência, autenticação, autoscaling e muito mais.
 
 ## 📋 Índice
 
@@ -17,7 +17,7 @@ Helm Chart para deploy da aplicação MCP Mesh (Deco CMS) no Kubernetes. Este ch
 
 ## 🎯 Visão Geral
 
-Este Helm Chart encapsula todos os recursos Kubernetes necessários para executar a aplicação MCP Mesh:
+Este Helm encapsula todos os recursos Kubernetes necessários para executar a aplicação:
 
 - **Deployment**: Aplicação principal com configurações de segurança
 - **Service**: Exposição interna da aplicação
@@ -31,7 +31,6 @@ Este Helm Chart encapsula todos os recursos Kubernetes necessários para executa
 
 - ✅ **Parametrizável**: Todas as configurações via `values.yaml`
 - ✅ **Reutilizável**: Deploy em múltiplos ambientes com diferentes valores
-- ✅ **Seguro**: Security contexts, non-root, capabilities drop
 - ✅ **Flexível**: Suporte a volumes adicionais, tolerations, affinity
 - ✅ **Observável**: Health checks, labels padronizados
 - ✅ **Escalável**: HPA opcional para autoscaling
@@ -48,6 +47,9 @@ Este Helm Chart encapsula todos os recursos Kubernetes necessários para executa
 ### Instalação Básica
 
 ```bash
+# Preparando os parâmetros necessários
+Ajuste o values.yaml com as configurações desejadas para rodar no seu ambiente
+
 # Instalar com valores padrão
 helm install deco-mcp-mesh . --namespace deco-mcp-mesh --create-namespace
 
@@ -111,6 +113,21 @@ service:
   type: LoadBalancer
   port: 80
 
+database:
+  engine: postgresql
+  url: "postgresql://mesh_user:mesh_password@mesh.example.com:5432/mesh_db"  
+  caCert: |
+  -----BEGIN CERTIFICATE-----
+  aaaaaaaabbbbbbcccccccccddddddd
+  aaaaaaaabbbbbbcccccccccddddddd
+  aaaaaaaabbbbbbcccccccccddddddd
+  aaaaaaaabbbbbbcccccccccddddddd
+  aaaaaaaabbbbbbcccccccccddddddd
+  aaaaaaaabbbbbbcccccccccddddddd
+  aaaaaaaabbbbbbcccccccccddddddd
+  aaaaaaaabbbbbbcccccccccddddddd
+  -----END CERTIFICATE-----
+
 resources:
   requests:
     memory: "300Mi"
@@ -121,7 +138,7 @@ resources:
 
 persistence:
   size: 10Gi
-  storageClass: "efs"
+  storageClass: "gp3"
 ```
 
 Instale com valores customizados:
@@ -364,7 +381,7 @@ O chart suporta dois cenários de gerenciamento de secrets:
 2. **Usar Secret existente**:
    - Se `secret.secretName` estiver definido, **não cria** um novo Secret
    - O Deployment referencia o Secret existente especificado em `secretName`
-   - Útil para usar secrets gerenciados por External Secrets Operator, Sealed Secrets, etc.
+   - Útil para usar secrets gerenciados por External Secrets Operator, etc.
 
 **Resumo da lógica**:
 - Se `secret.secretName` vazio/indefinido → **cria** novo Secret
@@ -504,13 +521,7 @@ service:
   type: ClusterIP  # ClusterIP, NodePort, LoadBalancer
   port: 80
   targetPort: 3000
-  # sessionAffinity: ""  # Opcional: "ClientIP" para afinidade de IP, ou omitir (padrão: nenhuma afinidade)
-  # sessionAffinityConfig:
-  #   clientIP:
-  #     timeoutSeconds: 10800  # 3 horas
 ```
-
-**Nota**: Por padrão, o service não possui afinidade de sessão (`sessionAffinity` não está definido), o que significa que as requisições serão distribuídas entre todos os pods disponíveis de forma round-robin. Se precisar de afinidade de IP (sticky sessions), descomente e configure `sessionAffinity: ClientIP`.
 
 ### Recursos
 
@@ -624,10 +635,9 @@ configMap:
 
 **Notas importantes:**
 
-- O `sslmode` na URL deve ser `verify-ca` ou `verify-full` para validar o certificado
-- Se `caCert` não for fornecido, o ConfigMap e o volume não serão criados
+- Se `caCert` não for fornecido, o ConfigMap e o volume não serão criados para ele
 - A variável `NODE_EXTRA_CA_CERTS` só é adicionada se `caCert` estiver definido
-- Esta configuração é opcional - se não fornecida, a aplicação funcionará normalmente (sem validação de certificado CA customizado)
+- Esta configuração é opcional se você estiver rodando um Postgre gerenciado por si mesmo
 
 **Exemplo completo para AWS RDS:**
 
@@ -1029,8 +1039,7 @@ helm install deco-mcp-mesh . -f existing-secret-values.yaml -n deco-mcp-mesh --c
 ```
 
 **Quando usar**:
-- Usar secrets gerenciados por External Secrets Operator
-- Usar Sealed Secrets ou outros sistemas de gerenciamento de secrets
+- Usar secrets gerenciados por External Secrets Operator, etc
 - Compartilhar secrets entre diferentes releases do Helm
 - Usar secrets criados manualmente ou por outros processos
 
@@ -1087,162 +1096,12 @@ helm template deco-mcp-mesh . -n deco-mcp-mesh
 helm diff upgrade deco-mcp-mesh . -n deco-mcp-mesh
 ```
 
-### Backup do Banco de Dados
+### Backup do Banco de Dados - SQL Lite
 
 ```bash
 # Se usando PVC
 POD=$(kubectl get pod -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh -o jsonpath='{.items[0].metadata.name}')
 kubectl cp deco-mcp-mesh/$POD:/app/data/mesh.db ./backup-$(date +%Y%m%d).db
-```
-
-## 🐛 Troubleshooting
-
-### Erros de Certificado SSL com Bancos Gerenciados
-
-Se você estiver recebendo erros relacionados a certificados SSL ao conectar-se a bancos de dados gerenciados (AWS RDS, Google Cloud SQL, Azure Database, etc.), siga os passos abaixo:
-
-**Erro comum:**
-```
-error: self signed certificate in certificate chain
-errno: 0,
-code: "SELF_SIGNED_CERT_IN_CHAIN"
-```
-
-**Solução:**
-
-1. **Identifique o provedor e região do seu banco:**
-   - AWS RDS: Verifique a região (ex: `sa-east-1`, `us-east-1`)
-   - Outros provedores: Consulte a documentação do seu provedor
-
-2. **Baixe o certificado CA do provedor:**
-   
-   **AWS RDS:**
-   ```bash
-   # Substitua {região} pela sua região (ex: sa-east-1, us-east-1)
-   curl -o {região}-bundle.pem https://truststore.pki.rds.amazonaws.com/{região}/{região}-bundle.pem
-   ```
-
-   **Outros provedores** (Google Cloud SQL, Azure Database, DigitalOcean, etc.): Consulte a documentação do seu provedor para obter o certificado CA apropriado.
-
-3. **Configure no `values.yaml`:**
-   ```yaml
-   database:
-     engine: postgresql
-     url: "postgresql://user:pass@host:5432/db?sslmode=verify-ca"
-     caCert: |
-       -----BEGIN CERTIFICATE-----
-       ... (cole o conteúdo completo do certificado aqui)
-       -----END CERTIFICATE-----
-
-   configMap:
-     meshConfig:
-       DATABASE_PG_SSL: "true"
-       NODE_EXTRA_CA_CERTS: "/etc/ssl/certs/ca-cert.pem"
-   ```
-
-4. **Verifique se o certificado foi montado:**
-   ```bash
-   # Verificar se o ConfigMap foi criado
-   kubectl get configmap -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh | grep ca-cert
-
-   # Verificar se o volume foi montado no pod
-   kubectl exec -it deployment/deco-mcp-mesh -n deco-mcp-mesh -- ls -la /etc/ssl/certs/ca-cert.pem
-
-   # Verificar o conteúdo do certificado
-   kubectl exec -it deployment/deco-mcp-mesh -n deco-mcp-mesh -- cat /etc/ssl/certs/ca-cert.pem
-   ```
-
-5. **Verifique a variável de ambiente:**
-   ```bash
-   kubectl exec -it deployment/deco-mcp-mesh -n deco-mcp-mesh -- env | grep NODE_EXTRA_CA_CERTS
-   # Deve retornar: NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-cert.pem
-   ```
-
-6. **Reinicie o deployment:**
-   ```bash
-   kubectl rollout restart deployment/deco-mcp-mesh -n deco-mcp-mesh
-   ```
-
-**Nota:** Se você não quiser usar validação de certificado (não recomendado para produção), pode usar `sslmode=require` na URL do banco, mas isso não valida o certificado do servidor.
-
-### Pod Não Inicia
-
-```bash
-# Ver eventos
-kubectl describe pod -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
-
-# Ver logs
-kubectl logs -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
-
-# Verificar PVC
-kubectl get pvc -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
-```
-
-### PVC Não Monta
-
-```bash
-# Verificar StorageClass
-kubectl get storageclass
-
-# Ver detalhes do PVC
-kubectl describe pvc deco-mcp-mesh-data -n deco-mcp-mesh
-
-# Verificar se pod pode montar (ReadWriteOnce permite apenas 1 pod)
-kubectl get pods -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
-```
-
-### Health Checks Falhando
-
-```bash
-# Verificar se endpoint /health existe
-kubectl exec -it deployment/deco-mcp-mesh -n deco-mcp-mesh -- wget -O- http://localhost:3000/health
-
-# Ajustar valores em values.yaml
-livenessProbe:
-  initialDelaySeconds: 60  # Aumentar se app demora para iniciar
-```
-
-### Service Não Conecta
-
-```bash
-# Verificar labels do Deployment
-kubectl get deployment deco-mcp-mesh -n deco-mcp-mesh -o yaml | grep -A 5 labels
-
-# Verificar selector do Service
-kubectl get service deco-mcp-mesh -n deco-mcp-mesh -o yaml | grep -A 5 selector
-
-# Verificar endpoints
-kubectl get endpoints deco-mcp-mesh -n deco-mcp-mesh
-```
-
-### Imagem Não Puxa
-
-```bash
-# Verificar imagePullSecrets
-kubectl get pod -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh -o yaml | grep imagePullSecrets
-
-# Criar secret se necessário
-kubectl create secret docker-registry regcred \
-  --docker-server=ghcr.io \
-  --docker-username=USERNAME \
-  --docker-password=TOKEN
-
-# Adicionar ao values.yaml
-imagePullSecrets:
-  - name: regcred
-```
-
-### HPA Não Funciona
-
-```bash
-# Verificar HPA
-kubectl get hpa deco-mcp-mesh -n deco-mcp-mesh
-
-# Ver métricas
-kubectl top pods -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
-
-# Verificar se metrics-server está instalado
-kubectl get deployment metrics-server -n kube-system
 ```
 
 ## 🔐 Segurança
@@ -1296,13 +1155,6 @@ kubectl top pods -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 
 - **Liveness**: Mata e recria pods com problemas
 - **Readiness**: Remove pods do Service quando não estão prontos
-
-## 📚 Referências
-
-- [Helm Documentation](https://helm.sh/docs/)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [Helm Best Practices](https://helm.sh/docs/chart_best_practices/)
-- [Go Template Documentation](https://pkg.go.dev/text/template)
 
 ## 📄 Licença
 

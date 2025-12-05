@@ -1,4 +1,5 @@
 # Default values for chart-deco-mcp-mesh.
+# O valor abaixo só é considerado se o autoscalling estiver desabilitado.
 replicaCount: 1
 
 strategy:
@@ -13,19 +14,6 @@ image:
   repository: ghcr.io/decocms/admin/mesh
   pullPolicy: Always
 
-podSecurityContext:
-  fsGroup: 1001
-  fsGroupChangePolicy: "OnRootMismatch"
-
-securityContext:
-  runAsNonRoot: true
-  runAsUser: 1001
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: false
-
 service:
   type: ClusterIP
   port: 80
@@ -39,22 +27,18 @@ resources:
     memory: "600Mi"
     cpu: "500m"
 
-livenessProbe:
-  httpGet:
-    path: /health
-    port: http
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
-readinessProbe:
-  httpGet:
-    path: /health
-    port: http
-  initialDelaySeconds: 10
-  periodSeconds: 5
-  timeoutSeconds: 3
-  failureThreshold: 4
+database:
+  engine: sqlite # sqlite | postgresql
+  url: ""        # Obrigatório quando engine=postgresql
+  caCert: ""     # Opcional: Espeifique o certificado CA existente em formato PEM
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  storageClass: "gp3"  # string vazia aplica a default storage class.
+  size: 10Gi
+  claimName: ""  # Opcional: Espeifique o nome do PVC existente
+  distributed: false  # Marque como true se o storage oferecer ReadWriteMany
 
 autoscaling:
   enabled: false
@@ -68,30 +52,18 @@ configMap:
     NODE_ENV: "production"
     PORT: "3000"
     HOST: "0.0.0.0"
-    BETTER_AUTH_URL: "https://mesh-admin.decocms.com"  # Adjust port if using different port-forward port
-    BASE_URL: "https://mesh-admin.decocms.com"  # Adjust port if using different port-forward port
+    BETTER_AUTH_URL: "https://mesh.example.com"
+    BASE_URL: "https://mesh.example.com"
   
   authConfig:
     emailAndPassword:
       enabled: true
 
+
 secret:
   # secretName: ""  # Se definido, usa este secret existente (não cria novo secret)
-  # IMPORTANT: Change this to a secure random string in production (at least 32 chars)
-  # Generate with: openssl rand -base64 32
-  BETTER_AUTH_SECRET: "change-this-to-a-secure-random-string-at-least-32-chars"
-
-database:
-  engine: sqlite # sqlite | postgresql
-  url: ""        # Obrigatório quando engine=postgresql
-
-persistence:
-  enabled: true
-  accessMode: ReadWriteOnce
-  storageClass: "gp3"  # Empty string uses default storage class.
-  size: 10Gi
-  claimName: ""  # Optional: specify existing PVC name
-  distributed: false  # Marque como true se o storage oferecer ReadWriteMany
+  # Gere a secret com o comando a seguir: openssl rand -base64 32
+  BETTER_AUTH_SECRET: "defina_sua_secret_com_o_comando_acima"
 
 volumes: []
 # - name: foo
@@ -110,6 +82,36 @@ volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
+
+podSecurityContext:
+  fsGroup: 1001
+  fsGroupChangePolicy: "OnRootMismatch"
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 4
 
 nodeSelector:
   kubernetes.io/arch: amd64
@@ -135,7 +137,6 @@ affinity: {}
 #           topologyKey: kubernetes.io/hostname
 
 # Topology Spread Constraints (opcional - deixe vazio [] para desabilitar)
-# IMPORTANTE: labelSelector é obrigatório quando topologySpreadConstraints está configurado
 #topologySpreadConstraints: []
 topologySpreadConstraints:
   - maxSkew: 1
