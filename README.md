@@ -1,113 +1,113 @@
 # Helm Chart: chart-deco-mcp-mesh
 
-Este chart fornece uma solução completa e parametrizável para deploy da aplicação com suporte a persistência, autenticação, autoscaling e muito mais.
+This chart provides a complete and parameterizable solution for deploying the application with support for persistence, authentication, autoscaling, and much more.
 
-## 📋 Índice
+## 📋 Table of Contents
 
-- [Visão Geral](#visão-geral)
-- [Pré-requisitos](#pré-requisitos)
-- [Instalação](#instalação)
-- [Configuração](#configuração)
-- [Estrutura do Chart](#estrutura-do-chart)
-- [Templates e Funcionamento](#templates-e-funcionamento)
-- [Valores Configuráveis](#valores-configuráveis)
-- [Exemplos de Uso](#exemplos-de-uso)
-- [Manutenção e Atualização](#manutenção-e-atualização)
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Chart Structure](#chart-structure)
+- [Templates and Functionality](#templates-and-functionality)
+- [Configurable Values](#configurable-values)
+- [Usage Examples](#usage-examples)
+- [Maintenance and Updates](#maintenance-and-updates)
 - [Troubleshooting](#troubleshooting)
 
-## 🎯 Visão Geral
+## 🎯 Overview
 
-Este Helm encapsula todos os recursos Kubernetes necessários para executar a aplicação:
+This Helm chart encapsulates all Kubernetes resources necessary to run the application:
 
-- **Deployment**: Aplicação principal com configurações de segurança
-- **Service**: Exposição interna da aplicação
-- **ConfigMap**: Configurações não sensíveis
-- **Secret**: Dados sensíveis (autenticação)
-- **PersistentVolumeClaim**: Armazenamento persistente para banco de dados
-- **ServiceAccount**: Conta de serviço para o pod
-- **HorizontalPodAutoscaler**: Autoscaling automático (opcional)
+- **Deployment**: Main application with security configurations
+- **Service**: Internal application exposure
+- **ConfigMap**: Non-sensitive configurations
+- **Secret**: Sensitive data (authentication)
+- **PersistentVolumeClaim**: Persistent storage for database
+- **ServiceAccount**: Service account for the pod
+- **HorizontalPodAutoscaler**: Automatic autoscaling (optional)
 
-### Características Principais
+### Main Features
 
-- ✅ **Parametrizável**: Todas as configurações via `values.yaml`
-- ✅ **Reutilizável**: Deploy em múltiplos ambientes com diferentes valores
-- ✅ **Flexível**: Suporte a volumes adicionais, tolerations, affinity
-- ✅ **Observável**: Health checks, labels padronizados
-- ✅ **Escalável**: HPA opcional para autoscaling
+- ✅ **Parameterizable**: All configurations via `values.yaml`
+- ✅ **Reusable**: Deploy to multiple environments with different values
+- ✅ **Flexible**: Support for additional volumes, tolerations, affinity
+- ✅ **Observable**: Health checks, standardized labels
+- ✅ **Scalable**: Optional HPA for autoscaling
 
-## 📦 Pré-requisitos
+## 📦 Prerequisites
 
 - Kubernetes 1.32+
 - Helm 3.0+
-- `kubectl` configurado para acessar o cluster
-- StorageClass configurada (para PVC)
+- `kubectl` configured to access the cluster
+- StorageClass configured (for PVC)
 
-## 🚀 Instalação
+## 🚀 Installation
 
-### Instalação Básica
+### Basic Installation
 
 ```bash
-# Preparando os parâmetros necessários
-Ajuste o values.yaml com as configurações desejadas para rodar no seu ambiente
+# Preparing necessary parameters
+Adjust values.yaml with desired configurations to run in your environment
 
-# Instalar com valores padrão
+# Install with default values
 helm install deco-mcp-mesh . --namespace deco-mcp-mesh --create-namespace
 
-# Instalar com valores customizados
-helm install deco-mcp-mesh . -f meu-values.yaml -n deco-mcp-mesh --create-namespace
+# Install with custom values
+helm install deco-mcp-mesh . -f my-values.yaml -n deco-mcp-mesh --create-namespace
 ```
 
-### Verificar Instalação
+### Verify Installation
 
 ```bash
-# Ver status do release
+# View release status
 helm status deco-mcp-mesh -n deco-mcp-mesh
 
-# Ver recursos criados
+# View created resources
 kubectl get all -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 
-# Ver logs
+# View logs
 kubectl logs -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 ```
 
-### Desinstalar
+### Uninstall
 
 ```bash
 helm uninstall deco-mcp-mesh -n deco-mcp-mesh
 ```
 
-## ⚙️ Configuração
+## ⚙️ Configuration
 
-### Valores Principais
+### Main Values
 
-Os principais valores configuráveis estão em `values.yaml`.
+The main configurable values are in `values.yaml`.
 
-Principais seções:
+Main sections:
 
-| Parâmetro | Descrição | Padrão |
-|-----------|-----------|--------|
-| `replicaCount` | Número de réplicas | `3` |
-| `image.repository` | Repositório da imagem | `ghcr.io/decocms/admin/mesh` |
-| `image.tag` | Tag da imagem | `latest` |
-| `service.type` | Tipo do Service | `ClusterIP` |
-| `persistence.enabled` | Habilitar PVC | `true` |
-| `persistence.distributed` | PVC suporta ReadWriteMany | `true` |
-| `persistence.accessMode` | Modo de acesso do PVC | `ReadWriteMany` |
-| `persistence.storageClass` | StorageClass do PVC | `efs` |
-| `autoscaling.enabled` | Habilitar HPA | `false` |
-| `database.engine` | Banco (`sqlite`/`postgresql`) | `sqlite` |
-| `database.url` | URL do banco quando PostgreSQL | `""` |
-| `database.caCert` | Certificado CA para validação SSL (bancos gerenciados) | `""` |
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `replicaCount` | Number of replicas | `3` |
+| `image.repository` | Image repository | `ghcr.io/decocms/admin/mesh` |
+| `image.tag` | Image tag | `latest` |
+| `service.type` | Service type | `ClusterIP` |
+| `persistence.enabled` | Enable PVC | `true` |
+| `persistence.distributed` | PVC supports ReadWriteMany | `true` |
+| `persistence.accessMode` | PVC access mode | `ReadWriteMany` |
+| `persistence.storageClass` | PVC StorageClass | `efs` |
+| `autoscaling.enabled` | Enable HPA | `false` |
+| `database.engine` | Database (`sqlite`/`postgresql`) | `sqlite` |
+| `database.url` | Database URL when PostgreSQL | `""` |
+| `database.caCert` | CA certificate for SSL validation (managed databases) | `""` |
 
-### Personalização de Valores
+### Customizing Values
 
-Crie um arquivo `custom-values.yaml`:
+Create a `custom-values.yaml` file:
 
 ```yaml
 replicaCount: 2
 
 image:
-  tag: "v1.2.3" # Exemplo
+  tag: "v1.2.3" # Example
 
 service:
   type: LoadBalancer
@@ -141,50 +141,50 @@ persistence:
   storageClass: "gp3"
 ```
 
-Instale com valores customizados:
+Install with custom values:
 
 ```bash
 helm install deco-mcp-mesh . -f custom-values.yaml -n deco-mcp-mesh --create-namespace
 ```
 
-## 📁 Estrutura do Chart
+## 📁 Chart Structure
 
 ```
 chart-deco-mcp-mesh/
-├── Chart.yaml              # Metadados do chart
-├── values.yaml             # Valores padrão
-├── templates/              # Templates Kubernetes
-│   ├── _helpers.tpl        # Funções auxiliares
-│   ├── deployment.yaml     # Deployment da aplicação
+├── Chart.yaml              # Chart metadata
+├── values.yaml             # Default values
+├── templates/              # Kubernetes templates
+│   ├── _helpers.tpl        # Helper functions
+│   ├── deployment.yaml     # Application deployment
 │   ├── service.yaml        # Service
-│   ├── configmap.yaml      # ConfigMap principal
-│   ├── configmap-auth.yaml # ConfigMap de autenticação
+│   ├── configmap.yaml      # Main ConfigMap
+│   ├── configmap-auth.yaml # Authentication ConfigMap
 │   ├── secret.yaml         # Secret
 │   ├── pvc.yaml            # PersistentVolumeClaim
 │   ├── serviceaccount.yaml # ServiceAccount
 │   ├── hpa.yaml            # HorizontalPodAutoscaler
-│   └── NOTES.txt           # Mensagens pós-instalação
-└── README.md               # Este arquivo
+│   └── NOTES.txt           # Post-installation messages
+└── README.md               # This file
 ```
 
-## 🔧 Templates e Funcionamento
+## 🔧 Templates and Functionality
 
-### 1. `_helpers.tpl` - Funções Auxiliares
+### 1. `_helpers.tpl` - Helper Functions
 
-Este arquivo define funções reutilizáveis usadas em todos os templates:
+This file defines reusable functions used in all templates:
 
 #### `chart-deco-mcp-mesh.name`
-Retorna o nome base do chart:
+Returns the base chart name:
 ```yaml
 {{- define "chart-deco-mcp-mesh.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 ```
-- Usa `nameOverride` se definido, senão usa `Chart.Name`
-- Trunca para 63 caracteres (limite do Kubernetes)
+- Uses `nameOverride` if defined, otherwise uses `Chart.Name`
+- Truncates to 63 characters (Kubernetes limit)
 
 #### `chart-deco-mcp-mesh.fullname`
-Retorna o nome completo do recurso:
+Returns the full resource name:
 ```yaml
 {{- define "chart-deco-mcp-mesh.fullname" -}}
 {{- if .Values.fullnameOverride }}
@@ -194,10 +194,10 @@ Retorna o nome completo do recurso:
 {{- end }}
 {{- end }}
 ```
-- **Importante**: Usa apenas o `Release.Name`, ignorando o nome do chart
-- Se você instalar com `helm install deco-mcp-mesh`, todos os recursos terão nome `deco-mcp-mesh`
+- **Important**: Uses only `Release.Name`, ignoring the chart name
+- If you install with `helm install deco-mcp-mesh`, all resources will have the name `deco-mcp-mesh`
 
-**Exemplo**:
+**Example**:
 ```bash
 helm install deco-mcp-mesh . -n deco-mcp-mesh --create-namespace
 ```
@@ -208,7 +208,7 @@ helm install deco-mcp-mesh . -n deco-mcp-mesh --create-namespace
 - PVC: `deco-mcp-mesh-data`
 
 #### `chart-deco-mcp-mesh.labels`
-Gera labels padronizados:
+Generates standardized labels:
 ```yaml
 helm.sh/chart: chart-deco-mcp-mesh-0.1.0
 app.kubernetes.io/name: chart-deco-mcp-mesh
@@ -218,37 +218,37 @@ app.kubernetes.io/managed-by: Helm
 ```
 
 #### `chart-deco-mcp-mesh.selectorLabels`
-Labels usados para seleção (selectors):
+Labels used for selection (selectors):
 ```yaml
 app.kubernetes.io/name: chart-deco-mcp-mesh
 app.kubernetes.io/instance: deco-mcp-mesh
 ```
 
-### 2. `deployment.yaml` - Deployment da Aplicação
+### 2. `deployment.yaml` - Application Deployment
 
-#### Estrutura Condicional
+#### Conditional Structure
 
 ```yaml
 {{- if not .Values.autoscaling.enabled }}
 replicas: {{ .Values.replicaCount }}
 {{- end }}
 ```
-- Se HPA estiver habilitado, não define `replicas` (HPA controla)
+- If HPA is enabled, does not define `replicas` (HPA controls)
 
-#### Estratégia de Deployment (Auto-detecção)
+#### Deployment Strategy (Auto-detection)
 
 ```yaml
 strategy:
   type: {{ include "chart-deco-mcp-mesh.deploymentStrategy" . }}
 ```
 
-O chart detecta automaticamente a estratégia de deployment adequada:
-- **RollingUpdate**: usado quando PostgreSQL OU storage distribuído (ReadWriteMany)
-- **Recreate**: usado por padrão para SQLite com ReadWriteOnce
+The chart automatically detects the appropriate deployment strategy:
+- **RollingUpdate**: used when PostgreSQL OR distributed storage (ReadWriteMany)
+- **Recreate**: used by default for SQLite with ReadWriteOnce
 
-Você pode sobrescrever definindo explicitamente `strategy.type` em `values.yaml`.
+You can override by explicitly defining `strategy.type` in `values.yaml`.
 
-#### Variáveis de Ambiente
+#### Environment Variables
 
 ```yaml
 env:
@@ -270,10 +270,10 @@ env:
         key: DATABASE_URL
     {{- end }}
 ```
-- Referencia ConfigMap dinamicamente usando `fullname`
-- **Segurança**: `DATABASE_URL` usa `secretKeyRef` quando PostgreSQL (credenciais sensíveis) ou `configMapKeyRef` quando SQLite (apenas caminho de arquivo)
+- References ConfigMap dynamically using `fullname`
+- **Security**: `DATABASE_URL` uses `secretKeyRef` when PostgreSQL (sensitive credentials) or `configMapKeyRef` when SQLite (just file path)
 
-#### Volumes Condicionais
+#### Conditional Volumes
 
 ```yaml
 {{- if .Values.persistence.enabled }}
@@ -285,16 +285,16 @@ env:
   emptyDir: {}
 {{- end }}
 ```
-- Se `persistence.enabled: false`, usa `emptyDir` (dados temporários)
+- If `persistence.enabled: false`, uses `emptyDir` (temporary data)
 
-#### Volumes Adicionais
+#### Additional Volumes
 
 ```yaml
 {{- with .Values.volumes }}
   {{- toYaml . | nindent 8 }}
 {{- end }}
 ```
-- Permite adicionar volumes customizados via `values.yaml`
+- Allows adding custom volumes via `values.yaml`
 
 #### Topology Spread Constraints
 
@@ -310,8 +310,8 @@ topologySpreadConstraints:
   {{- end }}
 {{- end }}
 ```
-- Distribui pods uniformemente entre zonas/disponibilidade
-- **Importante**: `labelSelector` é obrigatório quando configurado
+- Distributes pods evenly across zones/availability
+- **Important**: `labelSelector` is required when configured
 
 ### 3. `service.yaml` - Service
 
@@ -319,18 +319,18 @@ topologySpreadConstraints:
 selector:
   {{- include "chart-deco-mcp-mesh.selectorLabels" . | nindent 4 }}
 ```
-- Usa `selectorLabels` para conectar ao Deployment
+- Uses `selectorLabels` to connect to Deployment
 
 ```yaml
 {{- if .Values.service.sessionAffinity }}
 sessionAffinity: {{ .Values.service.sessionAffinity }}
 {{- end }}
 ```
-- Renderiza apenas se `sessionAffinity` estiver definido
-- **Por padrão**: não há afinidade de sessão (requisições distribuídas entre todos os pods)
-- **Se configurado**: `sessionAffinity: ClientIP` garante que requisições do mesmo IP sejam direcionadas ao mesmo pod
+- Renders only if `sessionAffinity` is defined
+- **By default**: no session affinity (requests distributed among all pods)
+- **If configured**: `sessionAffinity: ClientIP` ensures requests from the same IP are directed to the same pod
 
-### 4. `configmap.yaml` - ConfigMap Principal
+### 4. `configmap.yaml` - Main ConfigMap
 
 ```yaml
 data:
@@ -340,11 +340,11 @@ data:
   DATABASE_URL: {{ include "chart-deco-mcp-mesh.databaseUrl" . | trim | quote }}
   {{- end }}
 ```
-- `| quote` garante que valores sejam strings válidas no YAML
-- **Segurança**: `DATABASE_URL` só vai no ConfigMap quando for SQLite (caminho de arquivo, não sensível)
-- Quando for PostgreSQL, `DATABASE_URL` vai no Secret (contém credenciais)
+- `| quote` ensures values are valid strings in YAML
+- **Security**: `DATABASE_URL` only goes in ConfigMap when SQLite (file path, not sensitive)
+- When PostgreSQL, `DATABASE_URL` goes in Secret (contains credentials)
 
-### 5. `configmap-auth.yaml` - ConfigMap de Autenticação
+### 5. `configmap-auth.yaml` - Authentication ConfigMap
 
 ```yaml
 auth-config.json: |
@@ -354,8 +354,8 @@ auth-config.json: |
     }
   }
 ```
-- Gera JSON a partir de valores YAML
-- Montado como arquivo no pod
+- Generates JSON from YAML values
+- Mounted as file in pod
 
 ### 6. `secret.yaml` - Secret
 
@@ -369,23 +369,23 @@ stringData:
 {{- end }}
 ```
 
-#### Lógica de Criação do Secret
+#### Secret Creation Logic
 
-O chart suporta dois cenários de gerenciamento de secrets:
+The chart supports two secret management scenarios:
 
-1. **Criar novo Secret** (padrão):
-   - Se `secret.secretName` estiver vazio ou não definido, cria um novo Secret
-   - Usa `stringData` (Helm codifica automaticamente para base64)
-   - Nome do Secret: `{{ release-name }}-secrets`
+1. **Create new Secret** (default):
+   - If `secret.secretName` is empty or undefined, creates a new Secret
+   - Uses `stringData` (Helm automatically encodes to base64)
+   - Secret name: `{{ release-name }}-secrets`
 
-2. **Usar Secret existente**:
-   - Se `secret.secretName` estiver definido, **não cria** um novo Secret
-   - O Deployment referencia o Secret existente especificado em `secretName`
-   - Útil para usar secrets gerenciados por External Secrets Operator, etc.
+2. **Use existing Secret**:
+   - If `secret.secretName` is defined, **does not create** a new Secret
+   - Deployment references the existing Secret specified in `secretName`
+   - Useful for using secrets managed by External Secrets Operator, etc.
 
-**Resumo da lógica**:
-- Se `secret.secretName` vazio/indefinido → **cria** novo Secret
-- Se `secret.secretName` definido → **não cria** Secret, apenas referencia o existente
+**Logic summary**:
+- If `secret.secretName` empty/undefined → **creates** new Secret
+- If `secret.secretName` defined → **does not create** Secret, only references existing one
 
 ### 7. `pvc.yaml` - PersistentVolumeClaim
 
@@ -406,41 +406,41 @@ spec:
 {{- end }}
 ```
 
-#### Lógica de Criação do PVC
+#### PVC Creation Logic
 
-O chart suporta três cenários de persistência:
+The chart supports three persistence scenarios:
 
-1. **Criar novo PVC** (padrão):
+1. **Create new PVC** (default):
    ```yaml
    persistence:
      enabled: true
-     claimName: ""  # ou omitir
+     claimName: ""  # or omit
    ```
-   - Cria um novo PVC com o nome `{{ release-name }}-data`
-   - Usa os parâmetros definidos em `persistence` (size, storageClass, accessMode)
+   - Creates a new PVC with name `{{ release-name }}-data`
+   - Uses parameters defined in `persistence` (size, storageClass, accessMode)
 
-2. **Usar PVC existente**:
+2. **Use existing PVC**:
    ```yaml
    persistence:
      enabled: true
-     claimName: "meu-pvc-existente"
+     claimName: "my-existing-pvc"
    ```
-   - **Não cria** um novo PVC
-   - Referencia o PVC existente especificado em `claimName`
-   - Útil para reutilizar dados de instalações anteriores ou PVCs criados manualmente
+   - **Does not create** a new PVC
+   - References the existing PVC specified in `claimName`
+   - Useful for reusing data from previous installations or manually created PVCs
 
-3. **Sem persistência**:
+3. **No persistence**:
    ```yaml
    persistence:
      enabled: false
    ```
-   - **Não cria** PVC
-   - O Deployment usa `emptyDir` (dados temporários, perdidos ao reiniciar o pod)
+   - **Does not create** PVC
+   - Deployment uses `emptyDir` (temporary data, lost on pod restart)
 
-**Resumo da lógica**:
-- Se `persistence.enabled: false` → sem PVC (usa `emptyDir`)
-- Se `persistence.enabled: true` E `persistence.claimName` vazio/indefinido → **cria** novo PVC
-- Se `persistence.enabled: true` E `persistence.claimName` definido → **não cria** PVC, apenas referencia o existente
+**Logic summary**:
+- If `persistence.enabled: false` → no PVC (uses `emptyDir`)
+- If `persistence.enabled: true` AND `persistence.claimName` empty/undefined → **creates** new PVC
+- If `persistence.enabled: true` AND `persistence.claimName` defined → **does not create** PVC, only references existing one
 
 ### 8. `serviceaccount.yaml` - ServiceAccount
 
@@ -451,7 +451,7 @@ kind: ServiceAccount
 ...
 {{- end }}
 ```
-- Cria ServiceAccount apenas se `serviceAccount.create: true`
+- Creates ServiceAccount only if `serviceAccount.create: true`
 
 ### 9. `hpa.yaml` - HorizontalPodAutoscaler
 
@@ -462,12 +462,12 @@ kind: HorizontalPodAutoscaler
 ...
 {{- end }}
 ```
-- Cria HPA apenas se `autoscaling.enabled: true`
-- Quando habilitado, remove `replicas` do Deployment
+- Creates HPA only if `autoscaling.enabled: true`
+- When enabled, removes `replicas` from Deployment
 
-### 10. `NOTES.txt` - Mensagens Pós-Instalação
+### 10. `NOTES.txt` - Post-Installation Messages
 
-Exibe instruções após o install/upgrade:
+Displays instructions after install/upgrade:
 
 ```yaml
 {{- if contains "ClusterIP" .Values.service.type }}
@@ -475,44 +475,44 @@ Exibe instruções após o install/upgrade:
   echo "  kubectl port-forward svc/$SERVICE_NAME 8080:80"
 {{- end }}
 ```
-- Mensagens diferentes baseadas no tipo de Service
+- Different messages based on Service type
 
-## 📝 Valores Configuráveis
+## 📝 Configurable Values
 
-### Imagem
+### Image
 
 ```yaml
 image:
   repository: ghcr.io/decocms/admin/mesh
   pullPolicy: Always  # Always, IfNotPresent, Never
-  tag: "latest"       # Sobrescreve Chart.AppVersion se definido
+  tag: "latest"       # Overrides Chart.AppVersion if defined
 ```
 
-### Replicas e Estratégia
+### Replicas and Strategy
 
 ```yaml
-replicaCount: 3  # Ignorado se autoscaling.enabled: true
+replicaCount: 3  # Ignored if autoscaling.enabled: true
 
 strategy:
-  # type: ""  # Deixe vazio para auto-detecção:
-  #   - RollingUpdate: se database.engine=postgresql OU persistence.distributed=true OU accessMode=ReadWriteMany
-  #   - Recreate: se SQLite com ReadWriteOnce (padrão)
+  # type: ""  # Leave empty for auto-detection:
+  #   - RollingUpdate: if database.engine=postgresql OR persistence.distributed=true OR accessMode=ReadWriteMany
+  #   - Recreate: if SQLite with ReadWriteOnce (default)
   # rollingUpdate:
   #   maxSurge: 1
   #   maxUnavailable: 0
 ```
 
-**Auto-detecção de Estratégia**: Se `strategy.type` estiver vazio ou não definido, o chart detecta automaticamente a estratégia adequada:
-- **RollingUpdate**: usado quando `database.engine=postgresql` OU `persistence.distributed=true` OU `accessMode=ReadWriteMany`
-- **Recreate**: usado por padrão para SQLite com ReadWriteOnce (quando apenas um pod pode montar o volume)
+**Strategy Auto-detection**: If `strategy.type` is empty or undefined, the chart automatically detects the appropriate strategy:
+- **RollingUpdate**: used when `database.engine=postgresql` OR `persistence.distributed=true` OR `accessMode=ReadWriteMany`
+- **Recreate**: used by default for SQLite with ReadWriteOnce (when only one pod can mount the volume)
 
-Você também pode definir explicitamente `strategy.type: "RollingUpdate"` ou `"Recreate"` se desejar sobrescrever a auto-detecção.
+You can also explicitly define `strategy.type: "RollingUpdate"` or `"Recreate"` if you want to override auto-detection.
 
-### Restrições de Escalabilidade
+### Scalability Restrictions
 
-- `replicaCount > 1` **só é permitido** quando você possui storage distribuído (`persistence.distributed: true` ou `accessMode: ReadWriteMany`) **ou** está usando PostgreSQL (`database.engine: postgresql`).
-- `autoscaling.enabled: true` exige a mesma condição acima (storage distribuído ou PostgreSQL).
-- Caso não atenda a esses requisitos, mantenha `replicaCount: 1` e faça ajustes de capacidade via escalabilidade vertical (CPU/RAM).
+- `replicaCount > 1` **is only allowed** when you have distributed storage (`persistence.distributed: true` or `accessMode: ReadWriteMany`) **or** are using PostgreSQL (`database.engine: postgresql`).
+- `autoscaling.enabled: true` requires the same condition above (distributed storage or PostgreSQL).
+- If these requirements are not met, keep `replicaCount: 1` and make capacity adjustments via vertical scaling (CPU/RAM).
 
 ### Service
 
@@ -523,7 +523,7 @@ service:
   targetPort: 3000
 ```
 
-### Recursos
+### Resources
 
 ```yaml
 resources:
@@ -557,47 +557,47 @@ readinessProbe:
   failureThreshold: 4
 ```
 
-### Persistência
+### Persistence
 
 ```yaml
 persistence:
   enabled: true
-  storageClass: "efs"      # "" usa a padrão
+  storageClass: "efs"      # "" uses default
   accessMode: ReadWriteMany
   size: 10Gi
-  claimName: ""            # Se definido, usa PVC existente
-  distributed: true        # Marque true se o PVC oferecer ReadWriteMany
+  claimName: ""            # If defined, uses existing PVC
+  distributed: true        # Mark true if PVC offers ReadWriteMany
 
-**Importante**: marque `distributed: true` ou altere `accessMode` para `ReadWriteMany` quando utilizar storage distribuído (EFS, NFS, CephFS etc.). Sem isso, o chart bloqueará múltiplas réplicas e o uso do autoscaling.
+**Important**: mark `distributed: true` or change `accessMode` to `ReadWriteMany` when using distributed storage (EFS, NFS, CephFS, etc.). Without this, the chart will block multiple replicas and autoscaling usage.
 ```
 
-### Banco de Dados
+### Database
 
 ```yaml
 database:
   engine: sqlite        # sqlite | postgresql
-  url: ""               # Obrigatório quando engine=postgresql
+  url: ""               # Required when engine=postgresql
 ```
 
-- `sqlite`: usa o arquivo local `/app/data/mesh.db` (próprio para uma réplica).
-- `postgresql`: exige `database.url` (ex.: `postgresql://user:pass@host:5432/db`) e dispensa storage compartilhado para escalar horizontalmente.
+- `sqlite`: uses local file `/app/data/mesh.db` (suitable for one replica).
+- `postgresql`: requires `database.url` (e.g., `postgresql://user:pass@host:5432/db`) and does not require shared storage to scale horizontally.
 
-**Segurança**: O `DATABASE_URL` é armazenado de forma segura:
-- **SQLite**: vai no ConfigMap (é apenas um caminho de arquivo, não sensível)
-- **PostgreSQL**: vai no Secret (contém credenciais sensíveis como usuário e senha)
+**Security**: `DATABASE_URL` is stored securely:
+- **SQLite**: goes in ConfigMap (just a file path, not sensitive)
+- **PostgreSQL**: goes in Secret (contains sensitive credentials like user and password)
 
-O Deployment referencia automaticamente o local correto (`configMapKeyRef` para SQLite ou `secretKeyRef` para PostgreSQL) baseado no `database.engine`.
+The Deployment automatically references the correct location (`configMapKeyRef` for SQLite or `secretKeyRef` for PostgreSQL) based on `database.engine`.
 
-#### Certificados SSL/CA para Bancos Gerenciados
+#### SSL/CA Certificates for Managed Databases
 
-Ao conectar-se a bancos de dados gerenciados (como AWS RDS, Google Cloud SQL, Azure Database, etc.), é comum que o servidor use certificados SSL autoassinados ou certificados de autoridades certificadoras (CA) específicas do provedor. Para garantir conexões seguras e validadas, você pode configurar o certificado CA do provedor.
+When connecting to managed databases (such as AWS RDS, Google Cloud SQL, Azure Database, etc.), it is common for the server to use self-signed SSL certificates or provider-specific Certificate Authority (CA) certificates. To ensure secure and validated connections, you can configure the provider's CA certificate.
 
-**Quando usar:**
-- Conectando-se a bancos gerenciados que exigem validação de certificado SSL
-- Provedores como AWS RDS, Google Cloud SQL, Azure Database, DigitalOcean Managed Databases, etc.
-- Quando você recebe erros como `SELF_SIGNED_CERT_IN_CHAIN` ou `UNABLE_TO_VERIFY_LEAF_SIGNATURE`
+**When to use:**
+- Connecting to managed databases that require SSL certificate validation
+- Providers like AWS RDS, Google Cloud SQL, Azure Database, DigitalOcean Managed Databases, etc.
+- When you receive errors like `SELF_SIGNED_CERT_IN_CHAIN` or `UNABLE_TO_VERIFY_LEAF_SIGNATURE`
 
-**Configuração:**
+**Configuration:**
 
 ```yaml
 database:
@@ -606,50 +606,50 @@ database:
   caCert: |
     -----BEGIN CERTIFICATE-----
     MIID/jCCAuagAwIBAgIQdOCSuA9psBpQd8EI368/0DANBgkqhkiG9w0BAQsFADCB
-    ... (conteúdo completo do certificado CA)
+    ... (complete CA certificate content)
     -----END CERTIFICATE-----
 
 configMap:
   meshConfig:
     DATABASE_PG_SSL: "true"
-    NODE_EXTRA_CA_CERTS: "/etc/ssl/certs/ca-cert.pem"  # Caminho onde o certificado será montado
+    NODE_EXTRA_CA_CERTS: "/etc/ssl/certs/ca-cert.pem"  # Path where certificate will be mounted
 ```
 
-**Como obter o certificado CA:**
+**How to obtain the CA certificate:**
 
-- **AWS RDS**: Baixe o bundle de certificados da região desejada:
+- **AWS RDS**: Download the certificate bundle for the desired region:
   ```bash
   curl -o sa-east-1-bundle.pem https://truststore.pki.rds.amazonaws.com/sa-east-1/sa-east-1-bundle.pem
   ```
-  URLs disponíveis: `https://truststore.pki.rds.amazonaws.com/{região}/{região}-bundle.pem`
+  Available URLs: `https://truststore.pki.rds.amazonaws.com/{region}/{region}-bundle.pem`
 
-- **Outros provedores** (Google Cloud SQL, Azure Database, DigitalOcean, etc.): Consulte a documentação do seu provedor de banco de dados gerenciado para obter o certificado CA apropriado.
+- **Other providers** (Google Cloud SQL, Azure Database, DigitalOcean, etc.): Consult your managed database provider's documentation to obtain the appropriate CA certificate.
 
-**Como funciona:**
+**How it works:**
 
-1. O certificado CA é definido em `database.caCert` (conteúdo completo do certificado)
-2. O Helm cria um ConfigMap com o certificado
-3. O certificado é montado no pod em `/etc/ssl/certs/ca-cert.pem`
-4. A variável `NODE_EXTRA_CA_CERTS` aponta para o certificado montado
-5. O Node.js usa o certificado para validar a conexão SSL com o banco
+1. The CA certificate is defined in `database.caCert` (complete certificate content)
+2. Helm creates a ConfigMap with the certificate
+3. The certificate is mounted in the pod at `/etc/ssl/certs/ca-cert.pem`
+4. The `NODE_EXTRA_CA_CERTS` variable points to the mounted certificate
+5. Node.js uses the certificate to validate the SSL connection with the database
 
-**Notas importantes:**
+**Important notes:**
 
-- Se `caCert` não for fornecido, o ConfigMap e o volume não serão criados para ele
-- A variável `NODE_EXTRA_CA_CERTS` só é adicionada se `caCert` estiver definido
-- Esta configuração é opcional se você estiver rodando um Postgre gerenciado por si mesmo
+- If `caCert` is not provided, the ConfigMap and volume will not be created for it
+- The `NODE_EXTRA_CA_CERTS` variable is only added if `caCert` is defined
+- This configuration is optional if you are running a self-managed PostgreSQL
 
-**Exemplo completo para AWS RDS:**
+**Complete example for AWS RDS:**
 
 ```yaml
 database:
   engine: postgresql
-  url: "postgresql://postgres:senha@rds-instance.region.rds.amazonaws.com:5432/dbname?sslmode=verify-ca"
+  url: "postgresql://postgres:password@rds-instance.region.rds.amazonaws.com:5432/dbname?sslmode=verify-ca"
   caCert: |
     -----BEGIN CERTIFICATE-----
     MIID/jCCAuagAwIBAgIQdOCSuA9psBpQd8EI368/0DANBgkqhkiG9w0BAQsFADCB
     lzELMAkGA1UEBhMCVVMxIjAgBgNVBAoMGUFtYXpvbiBXZWIgU2VydmljZXMsIElu
-    ... (conteúdo completo do bundle)
+    ... (complete bundle content)
     -----END CERTIFICATE-----
 
 configMap:
@@ -669,7 +669,7 @@ autoscaling:
   targetMemoryUtilizationPercentage: 80
 ```
 
-**Importante**: habilite o autoscaling apenas se `persistence.distributed: true` (ou `accessMode: ReadWriteMany`) ou se estiver usando PostgreSQL (`database.engine: postgresql`). Caso contrário, o chart falhará durante o render.
+**Important**: enable autoscaling only if `persistence.distributed: true` (or `accessMode: ReadWriteMany`) or if using PostgreSQL (`database.engine: postgresql`). Otherwise, the chart will fail during render.
 
 ### ConfigMap
 
@@ -681,7 +681,7 @@ configMap:
     HOST: "0.0.0.0"
     BETTER_AUTH_URL: "http://localhost:8080"
     BASE_URL: "http://localhost:8080"
-    # DATABASE_URL é preenchido automaticamente a partir de database.engine/url
+    # DATABASE_URL is automatically filled from database.engine/url
   
   authConfig:
     emailAndPassword:
@@ -710,41 +710,41 @@ configMap:
 
 ### Secret
 
-O chart suporta três cenários de gerenciamento de secrets:
+The chart supports three secret management scenarios:
 
-1. **Criar novo Secret** (padrão):
+1. **Create new Secret** (default):
    ```yaml
    secret:
-     secretName: ""  # ou omitir
+     secretName: ""  # or omit
      BETTER_AUTH_SECRET: "change-this-to-a-secure-random-string-at-least-32-chars"
    ```
-   - Cria um novo Secret com o nome `{{ release-name }}-secrets`
-   - Usa os valores definidos em `secret` (BETTER_AUTH_SECRET e opcionalmente DATABASE_URL para PostgreSQL)
+   - Creates a new Secret with name `{{ release-name }}-secrets`
+   - Uses values defined in `secret` (BETTER_AUTH_SECRET and optionally DATABASE_URL for PostgreSQL)
 
-2. **Usar Secret existente**:
+2. **Use existing Secret**:
    ```yaml
    secret:
-     secretName: "meu-secret-existente"  # Nome do secret que já existe no cluster
-     # BETTER_AUTH_SECRET não é necessário quando usando secret existente
+     secretName: "my-existing-secret"  # Name of secret that already exists in cluster
+     # BETTER_AUTH_SECRET not required when using existing secret
    ```
-   - **Não cria** um novo Secret
-   - Referencia o Secret existente especificado em `secretName`
-   - O Secret existente deve conter as chaves necessárias:
-     - `BETTER_AUTH_SECRET` (obrigatório)
-     - `DATABASE_URL` (obrigatório apenas se `database.engine=postgresql`)
-   - Útil para usar secrets gerenciados por External Secrets Operator, Sealed Secrets, ou outros sistemas
+   - **Does not create** a new Secret
+   - References the existing Secret specified in `secretName`
+   - The existing Secret must contain the necessary keys:
+     - `BETTER_AUTH_SECRET` (required)
+     - `DATABASE_URL` (required only if `database.engine=postgresql`)
+   - Useful for using secrets managed by External Secrets Operator, Sealed Secrets, or other systems
 
-3. **Sem Secret** (não suportado):
-   - O Secret é sempre necessário para `BETTER_AUTH_SECRET`
+3. **No Secret** (not supported):
+   - Secret is always required for `BETTER_AUTH_SECRET`
 
-**⚠️ Importante**: Gere um secret seguro:
+**⚠️ Important**: Generate a secure secret:
 ```bash
 openssl rand -base64 32
 ```
 
-**Resumo da lógica**:
-- Se `secret.secretName` vazio/indefinido → **cria** novo Secret
-- Se `secret.secretName` definido → **não cria** Secret, apenas referencia o existente
+**Logic summary**:
+- If `secret.secretName` empty/undefined → **creates** new Secret
+- If `secret.secretName` defined → **does not create** Secret, only references existing one
 
 ### Security Context
 
@@ -789,8 +789,8 @@ affinity: {}
 ### Topology Spread Constraints
 
 ```yaml
-# Topology Spread Constraints (opcional - deixe vazio [] para desabilitar)
-# IMPORTANTE: labelSelector é obrigatório quando topologySpreadConstraints está configurado
+# Topology Spread Constraints (optional - leave empty [] to disable)
+# IMPORTANT: labelSelector is required when topologySpreadConstraints is configured
 topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: topology.kubernetes.io/zone
@@ -801,9 +801,9 @@ topologySpreadConstraints:
         app.kubernetes.io/instance: deco-mcp-mesh
 ```
 
-**Importante**: O `labelSelector` é obrigatório quando `topologySpreadConstraints` está configurado. Isso garante que os pods sejam distribuídos uniformemente entre zonas/disponibilidade, melhorando a alta disponibilidade da aplicação.
+**Important**: The `labelSelector` is required when `topologySpreadConstraints` is configured. This ensures pods are distributed evenly across zones/availability, improving application high availability.
 
-### Volumes Adicionais
+### Additional Volumes
 
 ```yaml
 volumes: []
@@ -817,10 +817,10 @@ volumeMounts: []
 #   readOnly: true
 ```
 
-### Containers Extras no Pod
+### Extra Containers in Pod
 
-Você pode adicionar containers extras ao Pod (como sidecars, proxies, etc.) sem remover o container padrão da aplicação.  
-O chart sempre mantém o container principal e **concatena** o que for definido em `extraContainers`:
+You can add extra containers to the Pod (such as sidecars, proxies, etc.) without removing the default application container.  
+The chart always keeps the main container and **concatenates** what is defined in `extraContainers`:
 
 ```yaml
 extraContainers: []
@@ -831,8 +831,8 @@ extraContainers: []
 #     - "-instances=PROJECT:REGION:INSTANCE=tcp:5432"
 ```
 
-- Se `extraContainers` não for definido ou estiver vazio, o Pod terá apenas o container padrão (comportamento atual).
-- Se você definir `extraContainers`, todos esses containers serão adicionados ao mesmo Pod junto com o container principal.
+- If `extraContainers` is not defined or empty, the Pod will have only the default container (current behavior).
+- If you define `extraContainers`, all these containers will be added to the same Pod along with the main container.
 
 ### ServiceAccount
 
@@ -841,25 +841,25 @@ serviceAccount:
   create: true
   automount: true
   annotations: {}
-  name: ""  # Se definido, usa este nome (não cria)
+  name: ""  # If defined, uses this name (does not create)
 ```
 
 ### Naming
 
 ```yaml
-nameOverride: ""        # Substitui Chart.Name
-fullnameOverride: ""    # Substitui Release.Name (tem prioridade)
+nameOverride: ""        # Replaces Chart.Name
+fullnameOverride: ""    # Replaces Release.Name (has priority)
 ```
 
-## 💡 Exemplos de Uso
+## 💡 Usage Examples
 
-### Exemplo 1: Deploy Básico
+### Example 1: Basic Deploy
 
 ```bash
 helm install deco-mcp-mesh . -n deco-mcp-mesh --create-namespace
 ```
 
-### Exemplo 2: Deploy com Valores Customizados
+### Example 2: Deploy with Custom Values
 
 ```yaml
 # production-values.yaml
@@ -893,7 +893,7 @@ configMap:
 helm install deco-mcp-mesh . -f production-values.yaml -n deco-mcp-mesh --create-namespace
 ```
 
-### Exemplo 3: Deploy com Autoscaling
+### Example 3: Deploy with Autoscaling
 
 ```yaml
 # autoscaling-values.yaml
@@ -916,44 +916,44 @@ resources:
 helm install deco-mcp-mesh . -f autoscaling-values.yaml -n deco-mcp-mesh --create-namespace
 ```
 
-### Exemplo 4: Deploy com PVC Existente
+### Example 4: Deploy with Existing PVC
 
 ```yaml
 # existing-pvc-values.yaml
 persistence:
   enabled: true
-  claimName: "existing-mesh-data"  # Nome do PVC que já existe no cluster
-  # Quando claimName está definido, o chart NÃO cria um novo PVC
-  # Apenas referencia o PVC existente especificado
+  claimName: "existing-mesh-data"  # Name of PVC that already exists in cluster
+  # When claimName is defined, chart does NOT create a new PVC
+  # Only references the specified existing PVC
 ```
 
 ```bash
-# O PVC deve existir antes de instalar o chart
+# PVC must exist before installing chart
 kubectl get pvc existing-mesh-data -n deco-mcp-mesh
 
-# Instalar usando o PVC existente
+# Install using existing PVC
 helm install deco-mcp-mesh . -f existing-pvc-values.yaml -n deco-mcp-mesh --create-namespace
 
-# O Deployment será criado referenciando o PVC existente
-# Nenhum novo PVC será criado por este chart
+# Deployment will be created referencing existing PVC
+# No new PVC will be created by this chart
 ```
 
-**Quando usar**:
-- Migrar dados de uma instalação anterior
-- Reutilizar dados entre diferentes releases do Helm
-- Usar PVCs criados manualmente ou por outros processos
+**When to use**:
+- Migrate data from previous installation
+- Reuse data between different Helm releases
+- Use PVCs created manually or by other processes
 
-### Exemplo 5: Deploy com PostgreSQL e Certificado CA (Bancos Gerenciados)
+### Example 5: Deploy with PostgreSQL and CA Certificate (Managed Databases)
 
 ```yaml
 # postgresql-managed-values.yaml
 database:
   engine: postgresql
-  url: "postgresql://postgres:senha@rds-instance.sa-east-1.rds.amazonaws.com:5432/mydb?sslmode=verify-ca"
+  url: "postgresql://postgres:password@rds-instance.sa-east-1.rds.amazonaws.com:5432/mydb?sslmode=verify-ca"
   caCert: |
     -----BEGIN CERTIFICATE-----
     MIID/jCCAuagAwIBAgIQdOCSuA9psBpQd8EI368/0DANBgkqhkiG9w0BAQsFADCB
-    ... (conteúdo completo do certificado CA)
+    ... (complete CA certificate content)
     -----END CERTIFICATE-----
 
 configMap:
@@ -962,28 +962,28 @@ configMap:
     NODE_EXTRA_CA_CERTS: "/etc/ssl/certs/ca-cert.pem"
 
 persistence:
-  enabled: false  # Não precisa de PVC quando usa PostgreSQL externo
+  enabled: false  # No PVC needed when using external PostgreSQL
 ```
 
 ```bash
-# Baixar certificado CA da AWS RDS (exemplo para sa-east-1)
+# Download CA certificate from AWS RDS (example for sa-east-1)
 curl -o sa-east-1-bundle.pem https://truststore.pki.rds.amazonaws.com/sa-east-1/sa-east-1-bundle.pem
 
-# Copiar o conteúdo do certificado para o values.yaml
+# Copy certificate content to values.yaml
 cat sa-east-1-bundle.pem
 
-# Instalar com PostgreSQL gerenciado
+# Install with managed PostgreSQL
 helm install deco-mcp-mesh . -f postgresql-managed-values.yaml -n deco-mcp-mesh --create-namespace
 ```
 
-**Nota:** Este exemplo funciona para AWS RDS e outros provedores de bancos gerenciados. Para outros provedores, consulte a documentação para obter o certificado CA apropriado.
+**Note:** This example works for AWS RDS and other managed database providers. For other providers, consult the documentation to obtain the appropriate CA certificate.
 
-### Exemplo 6: Deploy sem Persistência (Desenvolvimento)
+### Example 6: Deploy without Persistence (Development)
 
 ```yaml
 # dev-values.yaml
 persistence:
-  enabled: false  # Usa emptyDir (dados temporários)
+  enabled: false  # Uses emptyDir (temporary data)
 
 replicaCount: 1
 
@@ -1000,126 +1000,125 @@ resources:
 helm install deco-mcp-mesh . -f dev-values.yaml -n deco-mcp-mesh --create-namespace
 ```
 
-### Exemplo 7: Deploy com Nome Customizado
+### Example 7: Deploy with Custom Name
 
 ```bash
-# Usa apenas o release name
+# Uses only release name
 helm install deco-mcp-mesh . -n deco-mcp-mesh --create-namespace
 
-# Ou sobrescreve completamente
+# Or completely override
 helm install deco-mcp-mesh . \
-  --set fullnameOverride=mesh-customizado \
+  --set fullnameOverride=custom-mesh \
   -n deco-mcp-mesh --create-namespace
 ```
 
-### Exemplo 8: Deploy com Secret Existente
+### Example 8: Deploy with Existing Secret
 
 ```yaml
 # existing-secret-values.yaml
 secret:
-  secretName: "external-secrets-operator-secret"  # Nome do secret que já existe no cluster
-  # BETTER_AUTH_SECRET não é necessário quando usando secret existente
-  # O secret existente deve conter as chaves:
-  #   - BETTER_AUTH_SECRET (obrigatório)
-  #   - DATABASE_URL (obrigatório apenas se database.engine=postgresql)
+  secretName: "external-secrets-operator-secret"  # Name of secret that already exists in cluster
+  # BETTER_AUTH_SECRET not required when using existing secret
+  # Existing secret must contain keys:
+  #   - BETTER_AUTH_SECRET (required)
+  #   - DATABASE_URL (required only if database.engine=postgresql)
 ```
 
 ```bash
-# O Secret deve existir antes de instalar o chart
+# Secret must exist before installing chart
 kubectl get secret external-secrets-operator-secret -n deco-mcp-mesh
 
-# Verificar se contém as chaves necessárias
+# Verify it contains necessary keys
 kubectl get secret external-secrets-operator-secret -n deco-mcp-mesh -o jsonpath='{.data}' | jq 'keys'
 
-# Instalar usando o Secret existente
+# Install using existing Secret
 helm install deco-mcp-mesh . -f existing-secret-values.yaml -n deco-mcp-mesh --create-namespace
 
-# O Deployment será criado referenciando o Secret existente
-# Nenhum novo Secret será criado por este chart
+# Deployment will be created referencing existing Secret
+# No new Secret will be created by this chart
 ```
 
-**Quando usar**:
-- Usar secrets gerenciados por External Secrets Operator, etc
-- Compartilhar secrets entre diferentes releases do Helm
-- Usar secrets criados manualmente ou por outros processos
+**When to use**:
+- Use secrets managed by External Secrets Operator, etc
+- Share secrets between different Helm releases
+- Use secrets created manually or by other processes
 
-## 🔄 Manutenção e Atualização
+## 🔄 Maintenance and Updates
 
-### Atualizar Valores
+### Update Values
 
 ```bash
-# Editar values.yaml ou criar novo arquivo
+# Edit values.yaml or create new file
 vim custom-values.yaml
 
-# Atualizar release
+# Update release
 helm upgrade deco-mcp-mesh . -f custom-values.yaml -n deco-mcp-mesh
 
-# Ver histórico
+# View history
 helm history deco-mcp-mesh -n deco-mcp-mesh
 
 # Rollback
 helm rollback deco-mcp-mesh -n deco-mcp-mesh
 ```
 
-### Atualizar Imagem
+### Update Image
 
 ```bash
-# Opção 1: Atualizar values.yaml e fazer upgrade
+# Option 1: Update values.yaml and upgrade
 helm upgrade deco-mcp-mesh . \
   --set image.tag=v1.2.3 \
   -n deco-mcp-mesh
 
-# Opção 2: Se pullPolicy: Always, apenas reiniciar
+# Option 2: If pullPolicy: Always, just restart
 kubectl rollout restart deployment/deco-mcp-mesh -n deco-mcp-mesh
 ```
 
-### Atualizar ConfigMap/Secret
+### Update ConfigMap/Secret
 
 ```bash
-# Editar values.yaml
+# Edit values.yaml
 vim values.yaml
 
-# Atualizar
+# Update
 helm upgrade deco-mcp-mesh . -n deco-mcp-mesh
 
-# Reiniciar pods para pegar mudanças
+# Restart pods to pick up changes
 kubectl rollout restart deployment/deco-mcp-mesh -n deco-mcp-mesh
 ```
 
-### Verificar Mudanças Antes de Aplicar
+### Verify Changes Before Applying
 
 ```bash
-# Ver o que será gerado
+# See what will be generated
 helm template deco-mcp-mesh . -n deco-mcp-mesh
 
-# Ver diff entre versões
+# See diff between versions
 helm diff upgrade deco-mcp-mesh . -n deco-mcp-mesh
 ```
 
-### Backup do Banco de Dados - SQL Lite
+### Database Backup - SQLite
 
 ```bash
-# Se usando PVC
+# If using PVC
 POD=$(kubectl get pod -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh -o jsonpath='{.items[0].metadata.name}')
 kubectl cp deco-mcp-mesh/$POD:/app/data/mesh.db ./backup-$(date +%Y%m%d).db
 ```
 
-## 🔐 Segurança
+## 🔐 Security
 
 ### Secrets Management
 
-**⚠️ Não commite secrets no Git!**
+**⚠️ Do not commit secrets to Git!**
 
-Opções recomendadas:
-
+Recommended options:
 
 1. **External Secrets Operator**:
 ```yaml
 secret:
-  BETTER_AUTH_SECRET: ""  # Preenchido via ExternalSecret
+  BETTER_AUTH_SECRET: ""  # Filled via ExternalSecret
 ```
 
-2. **Valores via linha de comando**:
+2. **Values via command line**:
 ```bash
 helm install deco-mcp-mesh . \
   --set secret.BETTER_AUTH_SECRET=$(cat secret.txt) \
@@ -1128,34 +1127,34 @@ helm install deco-mcp-mesh . \
 
 ### Security Context
 
-O chart já inclui:
+The chart already includes:
 - ✅ `runAsNonRoot: true`
 - ✅ `allowPrivilegeEscalation: false`
 - ✅ `capabilities.drop: ALL`
-- ⚠️ `readOnlyRootFilesystem: false` (pode ser habilitado com volumes tmpfs)
+- ⚠️ `readOnlyRootFilesystem: false` (can be enabled with tmpfs volumes)
 
-## 📊 Monitoramento
+## 📊 Monitoring
 
-### Labels para Seleção
+### Labels for Selection
 
-Todos os recursos têm labels padronizados:
+All resources have standardized labels:
 
 ```bash
-# Ver todos os recursos do release
+# View all release resources
 kubectl get all -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 
-# Ver logs
+# View logs
 kubectl logs -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 
-# Ver métricas
+# View metrics
 kubectl top pods -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 ```
 
 ### Health Checks
 
-- **Liveness**: Mata e recria pods com problemas
-- **Readiness**: Remove pods do Service quando não estão prontos
+- **Liveness**: Kills and recreates pods with problems
+- **Readiness**: Removes pods from Service when not ready
 
-## 📄 Licença
+## 📄 License
 
-Este chart é parte do projeto deco-mcp-mesh.
+This chart is part of the deco-mcp-mesh project.

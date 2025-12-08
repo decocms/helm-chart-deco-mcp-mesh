@@ -17,7 +17,7 @@ data:
   NODE_EXTRA_CA_CERTS: {{ .Values.configMap.meshConfig.NODE_EXTRA_CA_CERTS | quote }}
   {{- end }}
   {{- if ne (lower (default "sqlite" .Values.database.engine)) "postgresql" }}
-  # DATABASE_URL só vai no ConfigMap quando for SQLite (caminho do arquivo, não sensível)
+  # DATABASE_URL only goes in ConfigMap when SQLite (file path, not sensitive)
   DATABASE_URL: {{ include "chart-deco-mcp-mesh.databaseUrl" . | trim | quote }}
 
   {{- end }}

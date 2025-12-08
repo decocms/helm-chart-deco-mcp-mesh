@@ -1,11 +1,11 @@
 # Default values for chart-deco-mcp-mesh.
-# O valor abaixo só é considerado se o autoscalling estiver desabilitado.
+# The value below is only considered if autoscaling is disabled.
 replicaCount: 1
 
 strategy:
-  # type: ""  # Deixe vazio para auto-detecção:
-  #   - RollingUpdate: se database.engine=postgresql OU persistence.distributed=true OU accessMode=ReadWriteMany
-  #   - Recreate: se SQLite com ReadWriteOnce (padrão)
+  # type: ""  # Leave empty for auto-detection:
+  #   - RollingUpdate: if database.engine=postgresql OR persistence.distributed=true OR accessMode=ReadWriteMany
+  #   - Recreate: if SQLite with ReadWriteOnce (default)
   # rollingUpdate:
   #   maxSurge: 1
   #   maxUnavailable: 0
@@ -29,16 +29,16 @@ resources:
 
 database:
   engine: sqlite # sqlite | postgresql
-  url: ""        # Obrigatório quando engine=postgresql
-  caCert: ""     # Opcional: Espeifique o certificado CA existente em formato PEM
+  url: ""        # Required when engine=postgresql
+  caCert: ""     # Optional: Specify existing CA certificate in PEM format
 
 persistence:
   enabled: true
   accessMode: ReadWriteOnce
-  storageClass: "gp3"  # string vazia aplica a default storage class.
+  storageClass: "gp3"  # Empty string applies default storage class.
   size: 10Gi
-  claimName: ""  # Opcional: Espeifique o nome do PVC existente
-  distributed: false  # Marque como true se o storage oferecer ReadWriteMany
+  claimName: ""  # Optional: Specify existing PVC name
+  distributed: false  # Mark as true if storage offers ReadWriteMany
 
 autoscaling:
   enabled: false
@@ -61,9 +61,9 @@ configMap:
 
 
 secret:
-  # secretName: ""  # Se definido, usa este secret existente (não cria novo secret)
-  # Gere a secret com o comando a seguir: openssl rand -base64 32
-  BETTER_AUTH_SECRET: "defina_sua_secret_com_o_comando_acima"
+  # secretName: ""  # If defined, uses this existing secret (does not create new secret)
+  # Generate secret with the following command: openssl rand -base64 32
+  BETTER_AUTH_SECRET: "define_your_secret_with_command_above"
 
 volumes: []
 # - name: foo
@@ -117,7 +117,7 @@ nodeSelector:
   kubernetes.io/arch: amd64
 
 tolerations: []
-# Exemplo:
+# Example:
 # tolerations:
 #   - key: "env"
 #     operator: "Equal"
@@ -125,7 +125,7 @@ tolerations: []
 #     effect: "NoSchedule"
 
 affinity: {}
-# Exemplo:
+# Example:
 # affinity:
 #   podAntiAffinity:
 #     preferredDuringSchedulingIgnoredDuringExecution:
@@ -136,7 +136,8 @@ affinity: {}
 #               app.kubernetes.io/name: chart-deco-mcp-mesh
 #           topologyKey: kubernetes.io/hostname
 
-# Topology Spread Constraints (opcional - deixe vazio [] para desabilitar)
+# Topology Spread Constraints (optional - leave empty [] to disable)
+# IMPORTANT: labelSelector is required when topologySpreadConstraints is configured
 #topologySpreadConstraints: []
 topologySpreadConstraints:
   - maxSkew: 1
