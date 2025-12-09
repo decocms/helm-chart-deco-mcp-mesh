@@ -42,6 +42,48 @@ spec:
       serviceAccountName: {{ include "chart-deco-mcp-mesh.serviceAccountName" . }}
       securityContext:
         {{- include "chart-deco-mcp-mesh.podSecurityContext" . | nindent 8 }}
+      {{- if .Values.secret.authConfigSecretName }}
+      initContainers:
+        - name: build-auth-config
+          image: alpine:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache jq > /dev/null 2>&1
+              
+              # Read values from Secret volume
+              GOOGLE_CLIENT_ID=$(cat /secrets/googleClientId 2>/dev/null || echo "")
+              GOOGLE_CLIENT_SECRET=$(cat /secrets/googleClientSecret 2>/dev/null || echo "")
+              GITHUB_CLIENT_ID=$(cat /secrets/githubClientId 2>/dev/null || echo "")
+              GITHUB_CLIENT_SECRET=$(cat /secrets/githubClientSecret 2>/dev/null || echo "")
+              RESEND_API_KEY=$(cat /secrets/resendApiKey 2>/dev/null || echo "")
+              
+              # Read base config from ConfigMap (non-sensitive values)
+              BASE_CONFIG=$(cat /base-config/auth-config.json 2>/dev/null || echo "{}")
+              
+              # Merge Secret values into base config
+              UPDATED_CONFIG=$(echo "$BASE_CONFIG" | jq --arg gid "$GOOGLE_CLIENT_ID" --arg gsec "$GOOGLE_CLIENT_SECRET" --arg ghid "$GITHUB_CLIENT_ID" --arg ghsec "$GITHUB_CLIENT_SECRET" --arg rkey "$RESEND_API_KEY" '
+                if $gid != "" then .socialProviders.google.clientId = $gid else . end |
+                if $gsec != "" then .socialProviders.google.clientSecret = $gsec else . end |
+                if $ghid != "" then .socialProviders.github.clientId = $ghid else . end |
+                if $ghsec != "" then .socialProviders.github.clientSecret = $ghsec else . end |
+                if $rkey != "" then (.emailProviders[] | select(.id == "resend-primary") | .config.apiKey = $rkey) else . end
+              ')
+              
+              # Write merged config to shared volume
+              echo "$UPDATED_CONFIG" | jq -c . > /shared/auth-config.json
+              echo "Auth config built successfully"
+          volumeMounts:
+            - name: auth-secrets
+              mountPath: /secrets
+              readOnly: true
+            - name: auth-config-base
+              mountPath: /base-config
+              readOnly: true
+            - name: auth-config-shared
+              mountPath: /shared
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -124,10 +166,17 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
+            {{- if .Values.secret.authConfigSecretName }}
+            - name: auth-config-shared
+              mountPath: /app/apps/mesh/auth-config.json
+              subPath: auth-config.json
+              readOnly: true
+            {{- else }}
             - name: auth-config
               mountPath: /app/apps/mesh/auth-config.json
               subPath: auth-config.json
               readOnly: true
+            {{- end }}
             - name: data
               mountPath: /app/data
             {{- if and (eq (lower (default "sqlite" .Values.database.engine)) "postgresql") .Values.database.caCert }}
@@ -142,12 +191,26 @@ spec:
       {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+        {{- if .Values.secret.authConfigSecretName }}
+        - name: auth-secrets
+          secret:
+            secretName: {{ .Values.secret.authConfigSecretName }}
+        - name: auth-config-base
+          configMap:
+            name: {{ include "chart-deco-mcp-mesh.fullname" . }}-auth-config
+            items:
+              - key: auth-config.json
+                path: auth-config.json
+        - name: auth-config-shared
+          emptyDir: {}
+        {{- else }}
         - name: auth-config
           configMap:
             name: {{ include "chart-deco-mcp-mesh.fullname" . }}-auth-config
             items:
               - key: auth-config.json
                 path: auth-config.json
+        {{- end }}
         {{- if and (eq (lower (default "sqlite" .Values.database.engine)) "postgresql") .Values.database.caCert }}
         - name: ca-cert
           configMap:
