@@ -9,7 +9,8 @@ data:
 {{- $authConfig := .Values.configMap.authConfig | deepCopy }}
 {{- if .Values.secret.authConfigSecretName }}
 {{- $authSecrets := lookup "v1" "Secret" .Release.Namespace .Values.secret.authConfigSecretName }}
-{{- if and $authSecrets $authSecrets.data }}
+{{- if $authSecrets }}
+{{- if $authSecrets.data }}
 {{- /* Google OAuth - clientId and clientSecret from Secret only if empty in values.yaml */}}
 {{- if hasKey $authConfig.socialProviders "google" }}
 {{- $googleClientId := index $authConfig.socialProviders.google "clientId" | default "" }}
@@ -39,6 +40,7 @@ data:
 {{- $resendApiKey := index .config "apiKey" | default "" }}
 {{- if eq $resendApiKey "" }}
 {{- $_ := set .config "apiKey" (b64dec $authSecrets.data.resendApiKey) }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

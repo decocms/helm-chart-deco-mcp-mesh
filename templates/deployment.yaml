@@ -42,6 +42,47 @@ spec:
       serviceAccountName: {{ include "chart-deco-mcp-mesh.serviceAccountName" . }}
       securityContext:
         {{- include "chart-deco-mcp-mesh.podSecurityContext" . | nindent 8 }}
+      {{- if .Values.secret.authConfigSecretName }}
+      initContainers:
+        - name: update-auth-config
+          image: alpine/k8s:1.28.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              apk add --no-cache jq > /dev/null 2>&1
+              echo "Reading auth secrets from Secret: {{ .Values.secret.authConfigSecretName }}"
+              
+              # Read secrets
+              GOOGLE_CLIENT_ID=$(kubectl get secret {{ .Values.secret.authConfigSecretName }} -n {{ .Release.Namespace }} -o jsonpath='{.data.googleClientId}' 2>/dev/null | base64 -d || echo "")
+              GOOGLE_CLIENT_SECRET=$(kubectl get secret {{ .Values.secret.authConfigSecretName }} -n {{ .Release.Namespace }} -o jsonpath='{.data.googleClientSecret}' 2>/dev/null | base64 -d || echo "")
+              GITHUB_CLIENT_ID=$(kubectl get secret {{ .Values.secret.authConfigSecretName }} -n {{ .Release.Namespace }} -o jsonpath='{.data.githubClientId}' 2>/dev/null | base64 -d || echo "")
+              GITHUB_CLIENT_SECRET=$(kubectl get secret {{ .Values.secret.authConfigSecretName }} -n {{ .Release.Namespace }} -o jsonpath='{.data.githubClientSecret}' 2>/dev/null | base64 -d || echo "")
+              RESEND_API_KEY=$(kubectl get secret {{ .Values.secret.authConfigSecretName }} -n {{ .Release.Namespace }} -o jsonpath='{.data.resendApiKey}' 2>/dev/null | base64 -d || echo "")
+              
+              if [ -z "$GOOGLE_CLIENT_ID" ] && [ -z "$GITHUB_CLIENT_ID" ]; then
+                echo "Warning: No secrets found, skipping update"
+                exit 0
+              fi
+              
+              # Read current ConfigMap
+              CURRENT_CONFIG=$(kubectl get configmap {{ include "chart-deco-mcp-mesh.fullname" . }}-auth-config -n {{ .Release.Namespace }} -o jsonpath='{.data.auth-config\.json}' 2>/dev/null || echo "{}")
+              
+              # Update JSON with secret values if they're empty
+              UPDATED_CONFIG=$(echo "$CURRENT_CONFIG" | jq --arg gid "$GOOGLE_CLIENT_ID" --arg gsec "$GOOGLE_CLIENT_SECRET" --arg ghid "$GITHUB_CLIENT_ID" --arg ghsec "$GITHUB_CLIENT_SECRET" --arg rkey "$RESEND_API_KEY" '
+                if $gid != "" and (.socialProviders.google.clientId == "" or .socialProviders.google.clientId == null) then .socialProviders.google.clientId = $gid else . end |
+                if $gsec != "" and (.socialProviders.google.clientSecret == "" or .socialProviders.google.clientSecret == null) then .socialProviders.google.clientSecret = $gsec else . end |
+                if $ghid != "" and (.socialProviders.github.clientId == "" or .socialProviders.github.clientId == null) then .socialProviders.github.clientId = $ghid else . end |
+                if $ghsec != "" and (.socialProviders.github.clientSecret == "" or .socialProviders.github.clientSecret == null) then .socialProviders.github.clientSecret = $ghsec else . end |
+                if $rkey != "" then (.emailProviders[] | select(.id == "resend-primary") | if (.config.apiKey == "" or .config.apiKey == null) then .config.apiKey = $rkey else . end) else . end
+              ')
+              
+              # Update ConfigMap
+              echo "$UPDATED_CONFIG" | kubectl patch configmap {{ include "chart-deco-mcp-mesh.fullname" . }}-auth-config -n {{ .Release.Namespace }} --type merge -p "{\"data\":{\"auth-config.json\":$(echo "$UPDATED_CONFIG" | jq -c .)}}" 2>/dev/null || echo "Failed to update ConfigMap"
+              
+              echo "Auth config updated successfully"
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
