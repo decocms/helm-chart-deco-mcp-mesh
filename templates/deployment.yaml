@@ -78,10 +78,29 @@ spec:
                 if $rkey != "" then (.emailProviders[] | select(.id == "resend-primary") | if (.config.apiKey == "" or .config.apiKey == null) then .config.apiKey = $rkey else . end) else . end
               ')
               
-              # Update ConfigMap
-              echo "$UPDATED_CONFIG" | kubectl patch configmap {{ include "chart-deco-mcp-mesh.fullname" . }}-auth-config -n {{ .Release.Namespace }} --type merge -p "{\"data\":{\"auth-config.json\":$(echo "$UPDATED_CONFIG" | jq -c .)}}" 2>/dev/null || echo "Failed to update ConfigMap"
+              # Create patch payload with proper JSON escaping
+              PATCH_PAYLOAD=$(echo "$UPDATED_CONFIG" | jq -c '{data: {"auth-config.json": .}}')
               
-              echo "Auth config updated successfully"
+              # Update ConfigMap using patch
+              echo "Attempting to patch ConfigMap..."
+              if kubectl patch configmap {{ include "chart-deco-mcp-mesh.fullname" . }}-auth-config -n {{ .Release.Namespace }} --type merge --patch "$PATCH_PAYLOAD" 2>&1; then
+                echo "Auth config updated successfully"
+              else
+                echo "Patch failed, trying alternative method with kubectl apply..."
+                # Alternative: use kubectl apply with the full ConfigMap
+                TEMP_FILE="/tmp/configmap-patch.json"
+                kubectl get configmap {{ include "chart-deco-mcp-mesh.fullname" . }}-auth-config -n {{ .Release.Namespace }} -o json | \
+                  jq ".data[\"auth-config.json\"] = $(echo "$UPDATED_CONFIG" | jq -c .)" > "$TEMP_FILE"
+                
+                if kubectl apply -f "$TEMP_FILE" -n {{ .Release.Namespace }} 2>&1; then
+                  echo "Auth config updated successfully (using kubectl apply)"
+                  rm -f "$TEMP_FILE"
+                else
+                  echo "ERROR: Failed to update ConfigMap with both methods"
+                  rm -f "$TEMP_FILE"
+                  exit 1
+                fi
+              fi
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
