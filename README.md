@@ -7,6 +7,8 @@ This chart provides a complete and parameterizable solution for deploying the ap
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+  - [Basic Installation](#basic-installation)
+  - [Using External Secrets](#using-external-secrets)
 - [Configuration](#configuration)
 - [Chart Structure](#chart-structure)
 - [Templates and Functionality](#templates-and-functionality)
@@ -69,6 +71,71 @@ kubectl get all -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 # View logs
 kubectl logs -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 ```
+
+### Using External Secrets
+
+To keep sensitive values out of your `values.yaml` file (useful for GitOps workflows like ArgoCD), you can create Secrets manually and reference them in your values file.
+
+#### Step 1: Create Secrets Manually
+
+Edit `examples/secrets-example.yaml` with your actual values and apply it:
+
+```bash
+# Edit the file with your real values
+# Then apply the Secrets
+kubectl apply -f examples/secrets-example.yaml -n deco-mcp-mesh
+```
+
+The Secrets file contains:
+- **Main Secret** (`deco-mcp-mesh-secrets`): Contains `BETTER_AUTH_SECRET` and `DATABASE_URL`
+- **Auth Config Secret** (`deco-mcp-mesh-auth-secrets`): Contains OAuth client IDs/secrets and API keys
+
+#### Step 2: Configure values.yaml to Use Secrets
+
+In your `values.yaml` or `values-custom.yaml`, configure:
+
+```yaml
+secret:
+  # Reference the existing Secret created manually
+  secretName: "deco-mcp-mesh-secrets"
+  
+  # Reference the authConfig Secret
+  authConfigSecretName: "deco-mcp-mesh-auth-secrets"
+
+database:
+  engine: postgresql
+  # Leave url empty when using Secret - value comes from DATABASE_URL in Secret
+  url: ""
+
+configMap:
+  authConfig:
+    socialProviders:
+      google:
+        # Leave empty when using Secret - values come from Secret
+        clientId: ""
+        clientSecret: ""
+      github:
+        clientId: ""
+        clientSecret: ""
+    emailProviders:
+      - id: "resend-primary"
+        provider: "resend"
+        config:
+          apiKey: ""  # Leave empty when using Secret
+          fromEmail: "noreply@decocms.com"
+```
+
+#### Step 3: Install/Upgrade
+
+```bash
+# Install with values that reference external Secrets
+helm install deco-mcp-mesh . -f values-custom.yaml -n deco-mcp-mesh --create-namespace
+
+# Or upgrade existing release
+helm upgrade deco-mcp-mesh . -f values-custom.yaml -n deco-mcp-mesh
+```
+
+**Note**: When `secret.secretName` is defined, the chart will use the existing Secret instead of creating a new one. Values defined in `values.yaml` take precedence over Secret values (for backward compatibility).
 
 ### Uninstall
 
