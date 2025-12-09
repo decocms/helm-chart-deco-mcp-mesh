@@ -62,18 +62,31 @@ spec:
               # Read base config from ConfigMap (non-sensitive values)
               BASE_CONFIG=$(cat /base-config/auth-config.json 2>/dev/null || echo "{}")
               
-              # Merge Secret values into base config
+              # Merge Secret values into base config - preserve entire structure
               UPDATED_CONFIG=$(echo "$BASE_CONFIG" | jq --arg gid "$GOOGLE_CLIENT_ID" --arg gsec "$GOOGLE_CLIENT_SECRET" --arg ghid "$GITHUB_CLIENT_ID" --arg ghsec "$GITHUB_CLIENT_SECRET" --arg rkey "$RESEND_API_KEY" '
-                if $gid != "" then .socialProviders.google.clientId = $gid else . end |
-                if $gsec != "" then .socialProviders.google.clientSecret = $gsec else . end |
-                if $ghid != "" then .socialProviders.github.clientId = $ghid else . end |
-                if $ghsec != "" then .socialProviders.github.clientSecret = $ghsec else . end |
-                if $rkey != "" then (.emailProviders[] | select(.id == "resend-primary") | .config.apiKey = $rkey) else . end
+                # Update Google OAuth if values provided
+                (if $gid != "" then .socialProviders.google.clientId = $gid else . end) |
+                (if $gsec != "" then .socialProviders.google.clientSecret = $gsec else . end) |
+                # Update GitHub OAuth if values provided
+                (if $ghid != "" then .socialProviders.github.clientId = $ghid else . end) |
+                (if $ghsec != "" then .socialProviders.github.clientSecret = $ghsec else . end) |
+                # Update Resend API Key if provided - this must return the full object
+                (if $rkey != "" then 
+                  .emailProviders = (.emailProviders | map(if .id == "resend-primary" then .config.apiKey = $rkey else . end))
+                else . end)
               ')
               
-              # Write merged config to shared volume
+              # Write merged config to shared volume (compact format)
               echo "$UPDATED_CONFIG" | jq -c . > /shared/auth-config.json
-              echo "Auth config built successfully"
+              
+              # Verify the output
+              if [ -s /shared/auth-config.json ]; then
+                echo "Auth config built successfully"
+                echo "Verification: socialProviders present: $(echo "$UPDATED_CONFIG" | jq -r 'has("socialProviders")')"
+              else
+                echo "ERROR: Failed to build auth config"
+                exit 1
+              fi
           volumeMounts:
             - name: auth-secrets
               mountPath: /secrets
