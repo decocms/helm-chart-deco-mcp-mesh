@@ -2,7 +2,7 @@
 
 This chart provides a complete and parameterizable solution for deploying the application with support for persistence, authentication, autoscaling, and much more.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
@@ -16,9 +16,8 @@ This chart provides a complete and parameterizable solution for deploying the ap
 - [Configurable Values](#configurable-values)
 - [Usage Examples](#usage-examples)
 - [Maintenance and Updates](#maintenance-and-updates)
-- [Troubleshooting](#troubleshooting)
 
-## 🎯 Overview
+## Overview
 
 This Helm chart encapsulates all Kubernetes resources necessary to run the application:
 
@@ -38,14 +37,14 @@ This Helm chart encapsulates all Kubernetes resources necessary to run the appli
 - ✅ **Observable**: Health checks, standardized labels
 - ✅ **Scalable**: Optional HPA for autoscaling
 
-## 📦 Prerequisites
+## Prerequisites
 
 - Kubernetes 1.32+
 - Helm 3.0+
 - `kubectl` configured to access the cluster
 - StorageClass configured (for PVC)
 
-## ⚡ Quick Start
+## Quick Start
 
 The simplest way to get the application up and running on k8s:
 
@@ -78,7 +77,7 @@ The application will be available at `http://localhost:8080`.
 > 
 > See the [Configuration](#configuration) section for more details on production configuration.
 
-## 🚀 Installation
+## Installation
 
 ### Basic Installation
 
@@ -177,7 +176,7 @@ helm upgrade deco-mcp-mesh . -f values-custom.yaml -n deco-mcp-mesh
 helm uninstall deco-mcp-mesh -n deco-mcp-mesh
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Main Values
 
@@ -248,7 +247,7 @@ Install with custom values:
 helm install deco-mcp-mesh . -f custom-values.yaml -n deco-mcp-mesh --create-namespace
 ```
 
-## 📁 Chart Structure
+## Chart Structure
 
 ```
 chart-deco-mcp-mesh/
@@ -268,7 +267,7 @@ chart-deco-mcp-mesh/
 └── README.md               # This file
 ```
 
-## 🔧 Templates and Functionality
+## Templates and Functionality
 
 ### 1. `_helpers.tpl` - Helper Functions
 
@@ -578,7 +577,7 @@ Displays instructions after install/upgrade:
 ```
 - Different messages based on Service type
 
-## 📝 Configurable Values
+## Configurable Values
 
 ### Image
 
@@ -952,7 +951,7 @@ nameOverride: ""        # Replaces Chart.Name
 fullnameOverride: ""    # Replaces Release.Name (has priority)
 ```
 
-## 💡 Usage Examples
+## Usage Examples
 
 ### Example 1: Basic Deploy
 
@@ -1144,7 +1143,7 @@ helm install deco-mcp-mesh . -f existing-secret-values.yaml -n deco-mcp-mesh --c
 - Share secrets between different Helm releases
 - Use secrets created manually or by other processes
 
-## 🔄 Maintenance and Updates
+## Maintenance and Updates
 
 ### Update Values
 
@@ -1205,7 +1204,7 @@ POD=$(kubectl get pod -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-me
 kubectl cp deco-mcp-mesh/$POD:/app/data/mesh.db ./backup-$(date +%Y%m%d).db
 ```
 
-## 🔐 Security
+## Security
 
 ### Secrets Management
 
@@ -1234,7 +1233,7 @@ The chart already includes:
 - ✅ `capabilities.drop: ALL`
 - ⚠️ `readOnlyRootFilesystem: false` (can be enabled with tmpfs volumes)
 
-## 📊 Monitoring
+## Monitoring
 
 ### Labels for Selection
 
@@ -1256,6 +1255,6 @@ kubectl top pods -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 - **Liveness**: Kills and recreates pods with problems
 - **Readiness**: Removes pods from Service when not ready
 
-## 📄 License
+## License
 
 This chart is part of the deco-mcp-mesh project.
