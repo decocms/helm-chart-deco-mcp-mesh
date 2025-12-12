@@ -6,6 +6,7 @@ This chart provides a complete and parameterizable solution for deploying the ap
 
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
 - [Installation](#installation)
   - [Basic Installation](#basic-installation)
   - [Using External Secrets](#using-external-secrets)
@@ -43,6 +44,39 @@ This Helm chart encapsulates all Kubernetes resources necessary to run the appli
 - Helm 3.0+
 - `kubectl` configured to access the cluster
 - StorageClass configured (for PVC)
+
+## ⚡ Quick Start
+
+The simplest way to get the application up and running on k8s:
+
+```bash
+# 1. Generate a secure secret for authentication
+SECRET=$(openssl rand -base64 32)
+
+# 2. Install the chart with the generated secret
+helm install deco-mcp-mesh . \
+  --namespace deco-mcp-mesh \
+  --create-namespace \
+  --set secret.BETTER_AUTH_SECRET="$SECRET"
+
+# 3. Wait for pods to be ready
+kubectl wait --for=condition=ready pod \
+  -l app.kubernetes.io/instance=deco-mcp-mesh \
+  -n deco-mcp-mesh \
+  --timeout=300s
+
+# 4. Access via port-forward
+kubectl port-forward svc/deco-mcp-mesh 8080:80 -n deco-mcp-mesh
+```
+
+The application will be available at `http://localhost:8080`.
+
+> **⚠️ Important for Production**: This configuration uses SQLite and is suitable only for development/testing. For production environments, configure:
+> - **PostgreSQL** as the database engine (`database.engine: postgresql`)
+> - **Autoscaling** enabled (`autoscaling.enabled: true`) with appropriate values
+> - **Distributed persistence** (`persistence.distributed: true`) or PostgreSQL to allow multiple replicas
+> 
+> See the [Configuration](#configuration) section for more details on production configuration.
 
 ## 🚀 Installation
 
