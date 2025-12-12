@@ -154,7 +154,7 @@ Main sections:
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `3` |
-| `image.repository` | Image repository | `ghcr.io/decocms/admin/mesh` |
+| `image.repository` | Image repository | `ghcr.io/decocms/mesh/mesh` |
 | `image.tag` | Image tag | `latest` |
 | `service.type` | Service type | `ClusterIP` |
 | `persistence.enabled` | Enable PVC | `true` |
@@ -550,7 +550,7 @@ Displays instructions after install/upgrade:
 
 ```yaml
 image:
-  repository: ghcr.io/decocms/admin/mesh
+  repository: ghcr.io/decocms/mesh/mesh
   pullPolicy: Always  # Always, IfNotPresent, Never
   tag: "latest"       # Overrides Chart.AppVersion if defined
 ```
