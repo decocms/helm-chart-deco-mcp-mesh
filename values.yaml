@@ -52,8 +52,8 @@ configMap:
     NODE_ENV: "production"
     PORT: "3000"
     HOST: "0.0.0.0"
-    BETTER_AUTH_URL: "https://mesh.example.com"
-    BASE_URL: "https://mesh.example.com"
+    BETTER_AUTH_URL: "https://localhost:8080"
+    BASE_URL: "http://localhost:8080"
   
   authConfig:
     emailAndPassword:
