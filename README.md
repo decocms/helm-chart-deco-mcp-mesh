@@ -37,6 +37,10 @@ This Helm chart encapsulates all Kubernetes resources necessary to run the appli
 - ✅ **Observable**: Health checks, standardized labels
 - ✅ **Scalable**: Optional HPA for autoscaling
 
+### Architecture
+![Infrastructure](./img/mcp-mesh-infra-arch.jpg)
+
+
 ## Prerequisites
 
 - Kubernetes 1.32+
