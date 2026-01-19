@@ -16,6 +16,12 @@ data:
   {{- if and .Values.configMap.meshConfig.NODE_EXTRA_CA_CERTS .Values.database.caCert }}
   NODE_EXTRA_CA_CERTS: {{ .Values.configMap.meshConfig.NODE_EXTRA_CA_CERTS | quote }}
   {{- end }}
+  {{- if .Values.configMap.meshConfig.ENABLE_DEBUG_SERVER }}
+  ENABLE_DEBUG_SERVER: {{ .Values.configMap.meshConfig.ENABLE_DEBUG_SERVER | quote }}
+  {{- end }}
+  {{- if .Values.configMap.meshConfig.DEBUG_PORT }}
+  DEBUG_PORT: {{ .Values.configMap.meshConfig.DEBUG_PORT | quote }}
+  {{- end }}
   {{- if ne (lower (default "sqlite" .Values.database.engine)) "postgresql" }}
   # DATABASE_URL only goes in ConfigMap when SQLite (file path, not sensitive)
   DATABASE_URL: {{ include "chart-deco-mcp-mesh.databaseUrl" . | trim | quote }}

@@ -170,6 +170,20 @@ spec:
                   name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
                   key: NODE_EXTRA_CA_CERTS
             {{- end }}
+            {{- if .Values.configMap.meshConfig.ENABLE_DEBUG_SERVER }}
+            - name: ENABLE_DEBUG_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+                  key: ENABLE_DEBUG_SERVER
+            {{- end }}
+            {{- if .Values.configMap.meshConfig.DEBUG_PORT }}
+            - name: DEBUG_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+                  key: DEBUG_PORT
+            {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
