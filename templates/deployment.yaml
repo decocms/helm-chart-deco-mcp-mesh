@@ -105,6 +105,10 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}{{- if and .Values.image.tag (hasPrefix "sha256:" .Values.image.tag) }}@{{ .Values.image.tag }}{{- else }}:{{ .Values.image.tag | default .Chart.AppVersion }}{{- end }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.image.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.targetPort | default 3000 }}
