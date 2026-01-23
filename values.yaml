@@ -113,6 +113,15 @@ readinessProbe:
   timeoutSeconds: 3
   failureThreshold: 4
 
+# Optional lifecycle hooks (preStop, postStart)
+# lifecycle:
+#   preStop:
+#     exec:
+#       command:
+#         - /bin/sh
+#         - -c
+#         - "wget -q -O - http://localhost:9229/prestop-hook || true"
+
 nodeSelector:
   kubernetes.io/arch: amd64
 

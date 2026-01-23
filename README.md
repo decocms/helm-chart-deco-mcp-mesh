@@ -400,6 +400,18 @@ env:
 ```
 - Allows adding custom volumes via `values.yaml`
 
+#### Lifecycle Hooks
+
+```yaml
+{{- with .Values.lifecycle }}
+lifecycle:
+  {{- toYaml . | nindent 12 }}
+{{- end }}
+```
+- Conditionally renders lifecycle hooks (preStop, postStart) if defined in `values.yaml`
+- Useful for graceful shutdowns, cleanup tasks, or initialization scripts
+- Supports both `exec` (command execution) and `httpGet` (HTTP requests)
+
 #### Topology Spread Constraints
 
 ```yaml
@@ -659,6 +671,42 @@ readinessProbe:
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 4
+```
+
+### Lifecycle Hooks
+
+You can configure lifecycle hooks (preStop, postStart) to execute commands during pod lifecycle events. This is useful for graceful shutdowns, cleanup tasks, or initialization scripts.
+
+```yaml
+# Optional lifecycle hooks (preStop, postStart)
+lifecycle:
+  preStop:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - "wget -q -O - http://localhost:9229/prestop-hook || true"
+```
+
+**Common use cases:**
+- **preStop**: Graceful shutdown, draining connections, cleanup tasks
+- **postStart**: Initialization scripts, warm-up tasks
+
+**Important notes:**
+- The `lifecycle` configuration is optional - if not defined, no lifecycle hooks will be added
+- The `preStop` hook runs before the container is terminated, allowing for graceful shutdowns
+- The `postStart` hook runs immediately after the container starts
+- Both hooks support `exec` (command execution) or `httpGet` (HTTP requests)
+
+**Example with preStop hook for graceful shutdown:**
+```yaml
+lifecycle:
+  preStop:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - "wget -q -O - http://localhost:9229/prestop-hook || true"
 ```
 
 ### Persistence
@@ -1146,6 +1194,31 @@ helm install deco-mcp-mesh . -f existing-secret-values.yaml -n deco-mcp-mesh --c
 - Use secrets managed by External Secrets Operator, etc
 - Share secrets between different Helm releases
 - Use secrets created manually or by other processes
+
+### Example 9: Deploy with Lifecycle Hook (Graceful Shutdown)
+
+```yaml
+# lifecycle-values.yaml
+lifecycle:
+  preStop:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - "wget -q -O - http://localhost:9229/prestop-hook || true"
+```
+
+```bash
+helm install deco-mcp-mesh . -f lifecycle-values.yaml -n deco-mcp-mesh --create-namespace
+```
+
+**When to use**:
+- Graceful shutdown of connections before pod termination
+- Cleanup tasks or resource release
+- Notifying external systems about pod termination
+- Draining connections or stopping background processes
+
+**Note**: The `preStop` hook runs before the container receives the SIGTERM signal, allowing for graceful shutdowns during rolling updates or pod deletions.
 
 ## Maintenance and Updates
 
