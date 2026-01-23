@@ -22,6 +22,9 @@ data:
   {{- if .Values.configMap.meshConfig.DEBUG_PORT }}
   DEBUG_PORT: {{ .Values.configMap.meshConfig.DEBUG_PORT | quote }}
   {{- end }}
+  {{- if .Values.configMap.meshConfig.PRESTOP_HEAP_SNAPSHOT_DIR }}
+  PRESTOP_HEAP_SNAPSHOT_DIR: {{ .Values.configMap.meshConfig.PRESTOP_HEAP_SNAPSHOT_DIR | quote }}
+  {{- end }}
   {{- if ne (lower (default "sqlite" .Values.database.engine)) "postgresql" }}
   # DATABASE_URL only goes in ConfigMap when SQLite (file path, not sensitive)
   DATABASE_URL: {{ include "chart-deco-mcp-mesh.databaseUrl" . | trim | quote }}

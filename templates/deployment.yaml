@@ -184,6 +184,13 @@ spec:
                   name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
                   key: DEBUG_PORT
             {{- end }}
+            {{- if .Values.configMap.meshConfig.PRESTOP_HEAP_SNAPSHOT_DIR }}
+            - name: PRESTOP_HEAP_SNAPSHOT_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+                  key: PRESTOP_HEAP_SNAPSHOT_DIR
+            {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

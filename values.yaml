@@ -54,6 +54,7 @@ configMap:
     HOST: "0.0.0.0"
     BETTER_AUTH_URL: "http://localhost:8080"
     BASE_URL: "http://localhost:8080"
+    # PRESTOP_HEAP_SNAPSHOT_DIR: ""  # Optional: Directory for heap snapshots during preStop hook
   
   authConfig:
     emailAndPassword:
