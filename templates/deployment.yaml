@@ -191,6 +191,31 @@ spec:
                   name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
                   key: PRESTOP_HEAP_SNAPSHOT_DIR
             {{- end }}
+            {{- if .Values.otel.enabled }}
+            {{- if .Values.otel.protocol }}
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: {{ .Values.otel.protocol | quote }}
+            {{- end }}
+            {{- if .Values.otel.service }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ .Values.otel.service | quote }}
+            {{- end }}
+            {{- if .Values.otel.endpoint }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.otel.endpoint | quote }}
+            {{- end }}
+            {{- if .Values.otel.headers }}
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              value: {{ include "chart-deco-mcp-mesh.otelHeaders" . | quote }}
+            {{- end }}
+            {{- if .Values.otel.attributes }}
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: {{ include "chart-deco-mcp-mesh.otelAttributes" . | quote }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

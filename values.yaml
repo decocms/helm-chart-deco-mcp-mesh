@@ -157,3 +157,29 @@ topologySpreadConstraints:
       matchLabels:
         app.kubernetes.io/name: chart-deco-mcp-mesh
         app.kubernetes.io/instance: deco-mcp-mesh
+
+# OpenTelemetry configuration (optional)
+otel:
+  enabled: false
+  protocol: "http/protobuf"  # http/protobuf | grpc
+  service: ""                # OTEL_SERVICE_NAME
+  endpoint: ""               # OTEL_EXPORTER_OTLP_ENDPOINT (e.g., https://otel-collector:4318)
+  headers: {}                # OTEL_EXPORTER_OTLP_HEADERS (key=value format)
+  # headers:
+  #   authorization: "Bearer your-token"
+  #   x-custom-header: "value"
+  attributes: {}             # OTEL_RESOURCE_ATTRIBUTES (key=value format)
+  # attributes:
+  #   deployment.environment: "production"
+  #   service.namespace: "my-namespace"
+
+# Additional environment variables (merged with existing envs)
+env: []
+# env:
+#   - name: MY_CUSTOM_VAR
+#     value: "my-value"
+#   - name: MY_SECRET_VAR
+#     valueFrom:
+#       secretKeyRef:
+#         name: my-secret
+#         key: my-key

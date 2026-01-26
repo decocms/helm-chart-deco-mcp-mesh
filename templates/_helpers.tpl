@@ -160,3 +160,25 @@ Otherwise, uses the generated name.
 {{- include "chart-deco-mcp-mesh.fullname" . }}-secrets
 {{- end -}}
 {{- end }}
+
+{{/*
+Formats OTEL headers map as key=value,key2=value2 format.
+*/}}
+{{- define "chart-deco-mcp-mesh.otelHeaders" -}}
+{{- $headers := list -}}
+{{- range $key, $value := .Values.otel.headers -}}
+{{- $headers = append $headers (printf "%s=%s" $key $value) -}}
+{{- end -}}
+{{- join "," $headers -}}
+{{- end }}
+
+{{/*
+Formats OTEL resource attributes map as key=value,key2=value2 format.
+*/}}
+{{- define "chart-deco-mcp-mesh.otelAttributes" -}}
+{{- $attrs := list -}}
+{{- range $key, $value := .Values.otel.attributes -}}
+{{- $attrs = append $attrs (printf "%s=%s" $key $value) -}}
+{{- end -}}
+{{- join "," $attrs -}}
+{{- end }}
