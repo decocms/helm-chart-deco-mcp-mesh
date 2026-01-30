@@ -409,6 +409,7 @@ lifecycle:
 {{- end }}
 ```
 - Conditionally renders lifecycle hooks (preStop, postStart) if defined in `values.yaml`
+- Optional `terminationGracePeriodSeconds` for graceful shutdown (e.g. with PostgreSQL to avoid connection resets during deploy)
 - Useful for graceful shutdowns, cleanup tasks, or initialization scripts
 - Supports both `exec` (command execution) and `httpGet` (HTTP requests)
 
@@ -697,6 +698,12 @@ lifecycle:
 - The `preStop` hook runs before the container is terminated, allowing for graceful shutdowns
 - The `postStart` hook runs immediately after the container starts
 - Both hooks support `exec` (command execution) or `httpGet` (HTTP requests)
+
+**`terminationGracePeriodSeconds` (optional):** Time in seconds the pod has to terminate gracefully after receiving SIGTERM (e.g. during a rolling update). When using PostgreSQL, set this (e.g. `60`) together with a `preStop` hook so the app can drain database connections and avoid "Connection reset by peer" in the DB logs. If not set, the default is 30 seconds.
+
+```yaml
+terminationGracePeriodSeconds: 60
+```
 
 **Example with preStop hook for graceful shutdown:**
 ```yaml
