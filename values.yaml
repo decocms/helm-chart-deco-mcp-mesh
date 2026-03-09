@@ -178,7 +178,7 @@ otel:
     enabled: false
     image:
       repository: otel/opentelemetry-collector-contrib
-      tag: "0.115.0"
+      tag: "0.115.1"
       pullPolicy: IfNotPresent
     resources:
       requests:
