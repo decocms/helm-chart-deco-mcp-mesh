@@ -2,4 +2,5 @@
 This file only runs chart-level validations and renders no resources.
 */ -}}
 {{- include "chart-deco-mcp-mesh.validate" . -}}
+{{- include "chart-deco-mcp-mesh.validateOtel" . -}}
 
