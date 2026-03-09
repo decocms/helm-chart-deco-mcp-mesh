@@ -142,6 +142,11 @@ spec:
                 secretKeyRef:
                   name: {{ include "chart-deco-mcp-mesh.secretName" . }}
                   key: BETTER_AUTH_SECRET
+            - name: CLICKHOUSE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chart-deco-mcp-mesh.secretName" . }}
+                  key: CLICKHOUSE_URL
             - name: DATABASE_URL
               {{- if eq (lower (default "sqlite" .Values.database.engine)) "postgresql" }}
               valueFrom:
