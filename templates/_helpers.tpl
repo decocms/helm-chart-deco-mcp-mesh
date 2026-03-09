@@ -162,6 +162,20 @@ Otherwise, uses the generated name.
 {{- end }}
 
 {{/*
+Validate OTel collector/S3 configuration.
+*/}}
+{{- define "chart-deco-mcp-mesh.validateOtel" -}}
+{{- if and .Values.otel.s3.enabled (not .Values.otel.collector.enabled) }}
+{{- fail "chart-deco-mcp-mesh: otel.s3.enabled=true requires otel.collector.enabled=true" -}}
+{{- end }}
+{{- if and .Values.otel.s3.roleArn (ne .Values.otel.s3.roleArn "") }}
+{{- if not (and .Values.serviceAccount .Values.serviceAccount.create) }}
+{{- fail "chart-deco-mcp-mesh: otel.s3.roleArn requires serviceAccount.create=true" -}}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
 Formats OTEL headers map as key=value,key2=value2 format.
 */}}
 {{- define "chart-deco-mcp-mesh.otelHeaders" -}}

@@ -163,7 +163,7 @@ otel:
   enabled: false
   protocol: "http/protobuf"  # http/protobuf | grpc
   service: ""                # OTEL_SERVICE_NAME
-  endpoint: ""               # OTEL_EXPORTER_OTLP_ENDPOINT (e.g., https://otel-collector:4318)
+  endpoint: ""               # Remote OTLP endpoint (direct export OR collector fan-out target)
   headers: {}                # OTEL_EXPORTER_OTLP_HEADERS (key=value format)
   # headers:
   #   authorization: "Bearer your-token"
@@ -172,6 +172,32 @@ otel:
   # attributes:
   #   deployment.environment: "production"
   #   service.namespace: "my-namespace"
+
+  # OTel Collector sidecar — when enabled, app exports to localhost:4318
+  collector:
+    enabled: false
+    image:
+      repository: otel/opentelemetry-collector-contrib
+      tag: "0.115.0"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+
+  # S3 exporter (requires collector.enabled: true)
+  s3:
+    enabled: false
+    bucket: ""               # Required when enabled
+    region: "us-east-1"
+    prefix: "otel"
+    filePrefix: "otel"
+    marshaler: "otlp_json"   # otlp_json | sumo_ic
+    compression: "none"      # none | gzip
+    roleArn: ""              # IRSA role ARN — adds eks.amazonaws.com/role-arn to ServiceAccount
 
 # Additional environment variables (merged with existing envs)
 env: []
