@@ -1,0 +1,66 @@
+{{- if .Values.s3Sync.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-s3-sync
+  labels:
+    {{- include "chart-deco-mcp-mesh.labels" . | nindent 4 }}
+data:
+  sync.sh: |
+    #!/bin/sh
+    set -e
+
+    BUCKET={{ required "s3Sync.bucket is required when s3Sync.enabled=true" .Values.s3Sync.bucket | quote }}
+    REGION={{ .Values.s3Sync.region | quote }}
+    PREFIX={{ .Values.s3Sync.prefix | quote }}
+    DATA_DIR="/app/data"
+    DIRS={{ join " " .Values.s3Sync.syncDirs | quote }}
+
+    export AWS_DEFAULT_REGION="$REGION"
+
+    # Build S3 base path
+    S3_BASE="s3://${BUCKET}"
+    if [ -n "$PREFIX" ]; then
+      S3_BASE="${S3_BASE}/${PREFIX}"
+    fi
+
+    echo "Installing dependencies..."
+    apk add --no-cache aws-cli inotify-tools > /dev/null 2>&1
+
+    # Wait for at least one data directory to exist
+    echo "Waiting for data directories..."
+    for dir in $DIRS; do
+      while [ ! -d "${DATA_DIR}/${dir}" ]; do
+        echo "Waiting for ${DATA_DIR}/${dir}..."
+        sleep 5
+      done
+    done
+
+    # Initial sync of existing files
+    echo "Running initial sync..."
+    for dir in $DIRS; do
+      if [ -d "${DATA_DIR}/${dir}" ]; then
+        aws s3 sync "${DATA_DIR}/${dir}" "${S3_BASE}/${dir}/" --quiet
+      fi
+    done
+    echo "Initial sync complete."
+
+    # Build inotifywait watch paths
+    WATCH_PATHS=""
+    for dir in $DIRS; do
+      WATCH_PATHS="${WATCH_PATHS} ${DATA_DIR}/${dir}"
+    done
+
+    # Watch for new files (moved_to = atomic rename after write)
+    echo "Watching for new files..."
+    inotifywait -m -r -e moved_to --format '%w%f' $WATCH_PATHS | while read filepath; do
+      # Only sync ndjson files
+      case "$filepath" in
+        *.ndjson)
+          rel_path="${filepath#${DATA_DIR}/}"
+          aws s3 cp "$filepath" "${S3_BASE}/${rel_path}" --quiet
+          echo "Uploaded: ${rel_path}"
+          ;;
+      esac
+    done
+{{- end }}

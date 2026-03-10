@@ -199,6 +199,13 @@ spec:
                   name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
                   key: PRESTOP_HEAP_SNAPSHOT_DIR
             {{- end }}
+            {{- if .Values.configMap.meshConfig.DATA_DIR }}
+            - name: DATA_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+                  key: DATA_DIR
+            {{- end }}
             {{- if .Values.otel.enabled }}
             {{- if .Values.otel.protocol }}
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
@@ -309,6 +316,29 @@ spec:
               mountPath: /etc/otel
               readOnly: true
       {{- end }}
+      {{- if .Values.s3Sync.enabled }}
+        - name: s3-sync
+          image: "{{ .Values.s3Sync.image.repository }}:{{ .Values.s3Sync.image.tag }}"
+          imagePullPolicy: {{ .Values.s3Sync.image.pullPolicy }}
+          command: ["/bin/sh", "/scripts/sync.sh"]
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          {{- with .Values.s3Sync.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+              readOnly: true
+            - name: s3-sync-script
+              mountPath: /scripts
+              readOnly: true
+      {{- end }}
       {{- with .Values.extraContainers }}
       {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -361,6 +391,15 @@ spec:
             items:
               - key: config.yaml
                 path: config.yaml
+        {{- end }}
+        {{- if .Values.s3Sync.enabled }}
+        - name: s3-sync-script
+          configMap:
+            name: {{ include "chart-deco-mcp-mesh.fullname" . }}-s3-sync
+            defaultMode: 0755
+            items:
+              - key: sync.sh
+                path: sync.sh
         {{- end }}
         {{- with .Values.volumes }}
           {{- toYaml . | nindent 8 }}
