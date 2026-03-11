@@ -193,12 +193,13 @@ otel:
 s3Sync:
   enabled: false
   image:
-    repository: alpine
-    tag: "3.21"
+    repository: amazon/aws-cli
+    tag: "latest"
     pullPolicy: IfNotPresent
   bucket: ""               # Required when enabled
   region: "us-east-1"
   prefix: ""               # S3 key prefix (e.g. "mesh/production")
+  interval: 30             # Polling interval in seconds
   roleArn: ""              # IRSA role ARN — adds eks.amazonaws.com/role-arn to ServiceAccount
   syncDirs:                # Directories under /app/data to sync
     - logs
