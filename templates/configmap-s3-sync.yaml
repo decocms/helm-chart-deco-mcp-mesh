@@ -13,7 +13,7 @@ data:
     BUCKET={{ required "s3Sync.bucket is required when s3Sync.enabled=true" .Values.s3Sync.bucket | quote }}
     REGION={{ .Values.s3Sync.region | quote }}
     PREFIX={{ .Values.s3Sync.prefix | quote }}
-    DATA_DIR="/app/data"
+    DATA_DIR={{ .Values.configMap.meshConfig.DATA_DIR | default "/app/data" | quote }}
     DIRS={{ join " " .Values.s3Sync.syncDirs | quote }}
 
     export AWS_DEFAULT_REGION="$REGION"

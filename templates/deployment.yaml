@@ -333,7 +333,7 @@ spec:
           {{- end }}
           volumeMounts:
             - name: data
-              mountPath: /app/data
+              mountPath: {{ .Values.configMap.meshConfig.DATA_DIR | default "/app/data" }}
               readOnly: true
             - name: s3-sync-script
               mountPath: /scripts
