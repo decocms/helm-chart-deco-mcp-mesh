@@ -8,7 +8,6 @@ metadata:
 data:
   sync.sh: |
     #!/bin/sh
-    set -e
 
     BUCKET={{ required "s3Sync.bucket is required when s3Sync.enabled=true" .Values.s3Sync.bucket | quote }}
     REGION={{ .Values.s3Sync.region | quote }}
@@ -18,6 +17,7 @@ data:
     INTERVAL={{ .Values.s3Sync.interval | default 30 }}
 
     export AWS_DEFAULT_REGION="$REGION"
+    export HOME="/tmp"
 
     # Build S3 base path
     S3_BASE="s3://${BUCKET}"
