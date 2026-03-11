@@ -301,12 +301,10 @@ spec:
               port: 13133
             initialDelaySeconds: 5
             periodSeconds: 5
+          {{- with .Values.securityContext }}
           securityContext:
-            runAsNonRoot: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.otel.collector.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -321,12 +319,10 @@ spec:
           image: "{{ .Values.s3Sync.image.repository }}:{{ .Values.s3Sync.image.tag }}"
           imagePullPolicy: {{ .Values.s3Sync.image.pullPolicy }}
           command: ["/bin/sh", "/scripts/sync.sh"]
+          {{- with .Values.securityContext }}
           securityContext:
-            runAsNonRoot: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.s3Sync.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
