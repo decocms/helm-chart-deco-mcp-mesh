@@ -263,7 +263,7 @@ spec:
               readOnly: true
             {{- end }}
             - name: data
-              mountPath: /app/data
+              mountPath: {{ .Values.configMap.meshConfig.DATA_DIR | default "/app/data" }}
             {{- if and (eq (lower (default "sqlite" .Values.database.engine)) "postgresql") .Values.database.caCert }}
             - name: ca-cert
               mountPath: /etc/ssl/certs
