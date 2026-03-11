@@ -165,12 +165,12 @@ Otherwise, uses the generated name.
 Validate OTel collector/S3 configuration.
 */}}
 {{- define "chart-deco-mcp-mesh.validateOtel" -}}
-{{- if and .Values.otel.s3.enabled (not .Values.otel.collector.enabled) }}
-{{- fail "chart-deco-mcp-mesh: otel.s3.enabled=true requires otel.collector.enabled=true" -}}
+{{- if and .Values.s3Sync.enabled (not .Values.s3Sync.bucket) }}
+{{- fail "chart-deco-mcp-mesh: s3Sync.bucket is required when s3Sync.enabled=true" -}}
 {{- end }}
-{{- if and .Values.otel.s3.roleArn (ne .Values.otel.s3.roleArn "") }}
+{{- if and .Values.s3Sync.roleArn (ne .Values.s3Sync.roleArn "") }}
 {{- if not (and .Values.serviceAccount .Values.serviceAccount.create) }}
-{{- fail "chart-deco-mcp-mesh: otel.s3.roleArn requires serviceAccount.create=true" -}}
+{{- fail "chart-deco-mcp-mesh: s3Sync.roleArn requires serviceAccount.create=true" -}}
 {{- end }}
 {{- end }}
 {{- end }}
