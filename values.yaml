@@ -230,7 +230,7 @@ nats:
         pvc:
           enabled: true
           size: 10Gi
-          storageClassName: gp3
+          storageClassName: ""  # empty = use cluster default StorageClass
 
 # Additional environment variables (merged with existing envs)
 env: []
