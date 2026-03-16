@@ -66,13 +66,14 @@ spec:
               BASE_CONFIG=$(cat /base-config/auth-config.json 2>/dev/null || echo "{}")
               
               # Merge Secret values into base config - preserve entire structure
+              # Only inject provider secrets when the provider is defined in the configmap
               UPDATED_CONFIG=$(echo "$BASE_CONFIG" | jq --arg gid "$GOOGLE_CLIENT_ID" --arg gsec "$GOOGLE_CLIENT_SECRET" --arg ghid "$GITHUB_CLIENT_ID" --arg ghsec "$GITHUB_CLIENT_SECRET" --arg rkey "$RESEND_API_KEY" '
-                # Update Google OAuth if values provided
-                (if $gid != "" then .socialProviders.google.clientId = $gid else . end) |
-                (if $gsec != "" then .socialProviders.google.clientSecret = $gsec else . end) |
-                # Update GitHub OAuth if values provided
-                (if $ghid != "" then .socialProviders.github.clientId = $ghid else . end) |
-                (if $ghsec != "" then .socialProviders.github.clientSecret = $ghsec else . end) |
+                # Update Google OAuth if values provided and provider is configured
+                (if ($gid != "") and (.socialProviders.google // null) != null then .socialProviders.google.clientId = $gid else . end) |
+                (if ($gsec != "") and (.socialProviders.google // null) != null then .socialProviders.google.clientSecret = $gsec else . end) |
+                # Update GitHub OAuth if values provided and provider is configured
+                (if ($ghid != "") and (.socialProviders.github // null) != null then .socialProviders.github.clientId = $ghid else . end) |
+                (if ($ghsec != "") and (.socialProviders.github // null) != null then .socialProviders.github.clientSecret = $ghsec else . end) |
                 # Update Resend API Key if provided - this must return the full object
                 (if $rkey != "" then 
                   .emailProviders = (.emailProviders | map(if .id == "resend-primary" then .config.apiKey = $rkey else . end))
