@@ -56,6 +56,7 @@ configMap:
     BASE_URL: "http://localhost:8080"
     DATA_DIR: "/app/data"
     # PRESTOP_HEAP_SNAPSHOT_DIR: ""  # Optional: Directory for heap snapshots during preStop hook
+    # NATS_URL: ""  # Optional: overrides auto-derived URL when nats.enabled=true (e.g. nats://my-nats:4222)
   
   authConfig:
     emailAndPassword:
@@ -212,6 +213,15 @@ s3Sync:
     limits:
       memory: "128Mi"
       cpu: "100m"
+
+# NATS subchart (https://artifacthub.io/packages/helm/nats/nats)
+# When enabled, NATS_URL is automatically set to nats://<release-name>-nats:4222
+# unless overridden via configMap.meshConfig.NATS_URL
+nats:
+  enabled: true
+  # config:
+  #   jetstream:
+  #     enabled: false
 
 # Additional environment variables (merged with existing envs)
 env: []
