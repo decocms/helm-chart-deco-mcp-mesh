@@ -206,6 +206,18 @@ spec:
                   name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
                   key: DATA_DIR
             {{- end }}
+            {{- $autoNatsUrl := "" }}
+            {{- if .Values.nats.enabled }}
+            {{- $autoNatsUrl = printf "nats://%s-nats:4222" .Release.Name }}
+            {{- end }}
+            {{- $natsUrl := .Values.configMap.meshConfig.NATS_URL | default $autoNatsUrl }}
+            {{- if $natsUrl }}
+            - name: NATS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+                  key: NATS_URL
+            {{- end }}
             {{- if .Values.otel.enabled }}
             {{- if .Values.otel.protocol }}
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
