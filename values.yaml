@@ -219,9 +219,15 @@ s3Sync:
 # unless overridden via configMap.meshConfig.NATS_URL
 nats:
   enabled: true
-  # config:
-  #   jetstream:
-  #     enabled: false
+  config:
+    jetstream:
+      enabled: true
+      fileStore:
+        enabled: true
+        pvc:
+          enabled: true
+          size: 10Gi
+          storageClassName: gp3
 
 # Additional environment variables (merged with existing envs)
 env: []
