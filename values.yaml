@@ -222,9 +222,9 @@ nats:
   config:
     jetstream:
       enabled: true
-      memStorage:
+      memoryStore:
         enabled: true
-        size: 1Gi
+        maxSize: 1Gi
       fileStore:
         enabled: true
         pvc:
