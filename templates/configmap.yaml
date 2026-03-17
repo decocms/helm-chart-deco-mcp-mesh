@@ -5,4 +5,4 @@ metadata:
   labels:
     {{- include "chart-deco-mcp-mesh.labels" . | nindent 4 }}
 data:
-  {{ toYaml . }}
+  {{- toYaml .Values.configMap.meshConfig | nindent 2 }}
