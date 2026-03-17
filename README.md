@@ -1,5 +1,10 @@
 # Helm Chart: chart-deco-mcp-mesh
 
+> [!WARNING]
+> **This repository has been archived.** The Helm chart has been moved to the official [deco Studio](https://github.com/decocms/studio) repository (formerly known as MCP Mesh).
+>
+> The chart is now maintained at [`deploy/helm/`](https://github.com/decocms/studio/tree/main/deploy/helm) and published to `ghcr.io/decocms/chart-deco-mcp-mesh`.
+
 This chart provides a complete and parameterizable solution for deploying the application with support for persistence, authentication, autoscaling, and much more.
 
 ## Table of Contents
