@@ -1,9 +1,9 @@
-# Helm Chart: chart-deco-mcp-mesh
+# Helm Chart: chart-deco-studio
 
 > [!WARNING]
-> **This repository has been archived.** The Helm chart has been moved to the official [deco Studio](https://github.com/decocms/studio) repository (formerly known as MCP Mesh).
+> **This repository has been archived.** The Helm chart has been moved to the official [deco Studio](https://github.com/decocms/studio) repository (formerly known as deco Studio).
 >
-> The chart is now maintained at [`deploy/helm/`](https://github.com/decocms/studio/tree/main/deploy/helm) and published to `ghcr.io/decocms/chart-deco-mcp-mesh`.
+> The chart is now maintained at [`deploy/helm/`](https://github.com/decocms/studio/tree/main/deploy/helm) and published to `ghcr.io/decocms/chart-deco-studio`.
 
 This chart provides a complete and parameterizable solution for deploying the application with support for persistence, authentication, autoscaling, and much more.
 
@@ -43,7 +43,7 @@ This Helm chart encapsulates all Kubernetes resources necessary to run the appli
 - ✅ **Scalable**: Optional HPA for autoscaling
 
 ### Architecture
-![Infrastructure](./img/mcp-mesh-infra-arch.jpg)
+![Infrastructure](./img/deco-studio-infra-arch.jpg)
 
 
 ## Prerequisites
@@ -62,19 +62,19 @@ The simplest way to get the application up and running on k8s:
 SECRET=$(openssl rand -base64 32)
 
 # 2. Install the chart with the generated secret
-helm install deco-mcp-mesh . \
-  --namespace deco-mcp-mesh \
+helm install deco-studio . \
+  --namespace deco-studio \
   --create-namespace \
   --set secret.BETTER_AUTH_SECRET="$SECRET"
 
 # 3. Wait for pods to be ready
 kubectl wait --for=condition=ready pod \
-  -l app.kubernetes.io/instance=deco-mcp-mesh \
-  -n deco-mcp-mesh \
+  -l app.kubernetes.io/instance=deco-studio \
+  -n deco-studio \
   --timeout=300s
 
 # 4. Access via port-forward
-kubectl port-forward svc/deco-mcp-mesh 8080:80 -n deco-mcp-mesh
+kubectl port-forward svc/deco-studio 8080:80 -n deco-studio
 ```
 
 The application will be available at `http://localhost:8080`.
@@ -95,23 +95,23 @@ The application will be available at `http://localhost:8080`.
 Adjust values.yaml with desired configurations to run in your environment
 
 # Install with default values
-helm install deco-mcp-mesh . --namespace deco-mcp-mesh --create-namespace
+helm install deco-studio . --namespace deco-studio --create-namespace
 
 # Install with custom values
-helm install deco-mcp-mesh . -f my-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f my-values.yaml -n deco-studio --create-namespace
 ```
 
 ### Verify Installation
 
 ```bash
 # View release status
-helm status deco-mcp-mesh -n deco-mcp-mesh
+helm status deco-studio -n deco-studio
 
 # View created resources
-kubectl get all -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
+kubectl get all -l app.kubernetes.io/instance=deco-studio -n deco-studio
 
 # View logs
-kubectl logs -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
+kubectl logs -l app.kubernetes.io/instance=deco-studio -n deco-studio
 ```
 
 ### Using External Secrets
@@ -125,12 +125,12 @@ Edit `examples/secrets-example.yaml` with your actual values and apply it:
 ```bash
 # Edit the file with your real values
 # Then apply the Secrets
-kubectl apply -f examples/secrets-example.yaml -n deco-mcp-mesh
+kubectl apply -f examples/secrets-example.yaml -n deco-studio
 ```
 
 The Secrets file contains:
-- **Main Secret** (`deco-mcp-mesh-secrets`): Contains `BETTER_AUTH_SECRET` and `DATABASE_URL`
-- **Auth Config Secret** (`deco-mcp-mesh-auth-secrets`): Contains OAuth client IDs/secrets and API keys
+- **Main Secret** (`deco-studio-secrets`): Contains `BETTER_AUTH_SECRET` and `DATABASE_URL`
+- **Auth Config Secret** (`deco-studio-auth-secrets`): Contains OAuth client IDs/secrets and API keys
 
 #### Step 2: Configure values.yaml to Use Secrets
 
@@ -139,10 +139,10 @@ In your `values.yaml` or `values-custom.yaml`, configure:
 ```yaml
 secret:
   # Reference the existing Secret created manually
-  secretName: "deco-mcp-mesh-secrets"
+  secretName: "deco-studio-secrets"
   
   # Reference the authConfig Secret
-  authConfigSecretName: "deco-mcp-mesh-auth-secrets"
+  authConfigSecretName: "deco-studio-auth-secrets"
 
 database:
   engine: postgresql
@@ -171,10 +171,10 @@ configMap:
 
 ```bash
 # Install with values that reference external Secrets
-helm install deco-mcp-mesh . -f values-custom.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f values-custom.yaml -n deco-studio --create-namespace
 
 # Or upgrade existing release
-helm upgrade deco-mcp-mesh . -f values-custom.yaml -n deco-mcp-mesh
+helm upgrade deco-studio . -f values-custom.yaml -n deco-studio
 ```
 
 **Note**: When `secret.secretName` is defined, the chart will use the existing Secret instead of creating a new one. Values defined in `values.yaml` take precedence over Secret values (for backward compatibility).
@@ -182,7 +182,7 @@ helm upgrade deco-mcp-mesh . -f values-custom.yaml -n deco-mcp-mesh
 ### Uninstall
 
 ```bash
-helm uninstall deco-mcp-mesh -n deco-mcp-mesh
+helm uninstall deco-studio -n deco-studio
 ```
 
 ## Configuration
@@ -196,7 +196,7 @@ Main sections:
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `3` |
-| `image.repository` | Image repository | `ghcr.io/decocms/mesh/mesh` |
+| `image.repository` | Image repository | `ghcr.io/decocms/studio/studio` |
 | `image.tag` | Image tag | `latest` |
 | `service.type` | Service type | `ClusterIP` |
 | `persistence.enabled` | Enable PVC | `true` |
@@ -224,7 +224,7 @@ service:
 
 database:
   engine: postgresql
-  url: "postgresql://mesh_user:mesh_password@mesh.example.com:5432/mesh_db"  
+  url: "postgresql://studio_user:studio_password@studio.example.com:5432/studio_db"  
   caCert: |
   -----BEGIN CERTIFICATE-----
   aaaaaaaabbbbbbcccccccccddddddd
@@ -253,13 +253,13 @@ persistence:
 Install with custom values:
 
 ```bash
-helm install deco-mcp-mesh . -f custom-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f custom-values.yaml -n deco-studio --create-namespace
 ```
 
 ## Chart Structure
 
 ```
-chart-deco-mcp-mesh/
+chart-deco-studio/
 ├── Chart.yaml              # Chart metadata
 ├── values.yaml             # Default values
 ├── templates/              # Kubernetes templates
@@ -282,20 +282,20 @@ chart-deco-mcp-mesh/
 
 This file defines reusable functions used in all templates:
 
-#### `chart-deco-mcp-mesh.name`
+#### `chart-deco-studio.name`
 Returns the base chart name:
 ```yaml
-{{- define "chart-deco-mcp-mesh.name" -}}
+{{- define "chart-deco-studio.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 ```
 - Uses `nameOverride` if defined, otherwise uses `Chart.Name`
 - Truncates to 63 characters (Kubernetes limit)
 
-#### `chart-deco-mcp-mesh.fullname`
+#### `chart-deco-studio.fullname`
 Returns the full resource name:
 ```yaml
-{{- define "chart-deco-mcp-mesh.fullname" -}}
+{{- define "chart-deco-studio.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -304,33 +304,33 @@ Returns the full resource name:
 {{- end }}
 ```
 - **Important**: Uses only `Release.Name`, ignoring the chart name
-- If you install with `helm install deco-mcp-mesh`, all resources will have the name `deco-mcp-mesh`
+- If you install with `helm install deco-studio`, all resources will have the name `deco-studio`
 
 **Example**:
 ```bash
-helm install deco-mcp-mesh . -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -n deco-studio --create-namespace
 ```
-- Deployment: `deco-mcp-mesh`
-- Service: `deco-mcp-mesh`
-- ConfigMap: `deco-mcp-mesh-config`
-- Secret: `deco-mcp-mesh-secrets`
-- PVC: `deco-mcp-mesh-data`
+- Deployment: `deco-studio`
+- Service: `deco-studio`
+- ConfigMap: `deco-studio-config`
+- Secret: `deco-studio-secrets`
+- PVC: `deco-studio-data`
 
-#### `chart-deco-mcp-mesh.labels`
+#### `chart-deco-studio.labels`
 Generates standardized labels:
 ```yaml
-helm.sh/chart: chart-deco-mcp-mesh-0.1.0
-app.kubernetes.io/name: chart-deco-mcp-mesh
-app.kubernetes.io/instance: deco-mcp-mesh
+helm.sh/chart: chart-deco-studio-0.1.0
+app.kubernetes.io/name: chart-deco-studio
+app.kubernetes.io/instance: deco-studio
 app.kubernetes.io/version: latest
 app.kubernetes.io/managed-by: Helm
 ```
 
-#### `chart-deco-mcp-mesh.selectorLabels`
+#### `chart-deco-studio.selectorLabels`
 Labels used for selection (selectors):
 ```yaml
-app.kubernetes.io/name: chart-deco-mcp-mesh
-app.kubernetes.io/instance: deco-mcp-mesh
+app.kubernetes.io/name: chart-deco-studio
+app.kubernetes.io/instance: deco-studio
 ```
 
 ### 2. `deployment.yaml` - Application Deployment
@@ -348,7 +348,7 @@ replicas: {{ .Values.replicaCount }}
 
 ```yaml
 strategy:
-  type: {{ include "chart-deco-mcp-mesh.deploymentStrategy" . }}
+  type: {{ include "chart-deco-studio.deploymentStrategy" . }}
 ```
 
 The chart automatically detects the appropriate deployment strategy:
@@ -364,18 +364,18 @@ env:
   - name: NODE_ENV
     valueFrom:
       configMapKeyRef:
-        name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+        name: {{ include "chart-deco-studio.fullname" . }}-config
         key: NODE_ENV
   - name: DATABASE_URL
     {{- if eq (lower (default "sqlite" .Values.database.engine)) "postgresql" }}
     valueFrom:
       secretKeyRef:
-        name: {{ include "chart-deco-mcp-mesh.fullname" . }}-secrets
+        name: {{ include "chart-deco-studio.fullname" . }}-secrets
         key: DATABASE_URL
     {{- else }}
     valueFrom:
       configMapKeyRef:
-        name: {{ include "chart-deco-mcp-mesh.fullname" . }}-config
+        name: {{ include "chart-deco-studio.fullname" . }}-config
         key: DATABASE_URL
     {{- end }}
 ```
@@ -388,7 +388,7 @@ env:
 {{- if .Values.persistence.enabled }}
 - name: data
   persistentVolumeClaim:
-    claimName: {{ include "chart-deco-mcp-mesh.fullname" . }}-data
+    claimName: {{ include "chart-deco-studio.fullname" . }}-data
 {{- else }}
 - name: data
   emptyDir: {}
@@ -439,7 +439,7 @@ topologySpreadConstraints:
 
 ```yaml
 selector:
-  {{- include "chart-deco-mcp-mesh.selectorLabels" . | nindent 4 }}
+  {{- include "chart-deco-studio.selectorLabels" . | nindent 4 }}
 ```
 - Uses `selectorLabels` to connect to Deployment
 
@@ -459,7 +459,7 @@ data:
   NODE_ENV: {{ .Values.configMap.meshConfig.NODE_ENV | quote }}
   PORT: {{ .Values.configMap.meshConfig.PORT | quote }}
   {{- if ne (lower (default "sqlite" .Values.database.engine)) "postgresql" }}
-  DATABASE_URL: {{ include "chart-deco-mcp-mesh.databaseUrl" . | trim | quote }}
+  DATABASE_URL: {{ include "chart-deco-studio.databaseUrl" . | trim | quote }}
   {{- end }}
 ```
 - `| quote` ensures values are valid strings in YAML
@@ -517,7 +517,7 @@ The chart supports two secret management scenarios:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "chart-deco-mcp-mesh.fullname" . }}-data
+  name: {{ include "chart-deco-studio.fullname" . }}-data
 spec:
   accessModes:
     - {{ .Values.persistence.accessMode }}
@@ -605,7 +605,7 @@ Displays instructions after install/upgrade:
 
 ```yaml
 image:
-  repository: ghcr.io/decocms/mesh/mesh
+  repository: ghcr.io/decocms/studio/studio
   pullPolicy: Always  # Always, IfNotPresent, Never
   tag: "latest"       # Overrides Chart.AppVersion if defined
 ```
@@ -946,7 +946,7 @@ affinity: {}
 #         podAffinityTerm:
 #           labelSelector:
 #             matchLabels:
-#               app.kubernetes.io/name: chart-deco-mcp-mesh
+#               app.kubernetes.io/name: chart-deco-studio
 #           topologyKey: kubernetes.io/hostname
 ```
 
@@ -961,8 +961,8 @@ topologySpreadConstraints:
     whenUnsatisfiable: ScheduleAnyway
     labelSelector:
       matchLabels:
-        app.kubernetes.io/name: chart-deco-mcp-mesh
-        app.kubernetes.io/instance: deco-mcp-mesh
+        app.kubernetes.io/name: chart-deco-studio
+        app.kubernetes.io/instance: deco-studio
 ```
 
 **Important**: The `labelSelector` is required when `topologySpreadConstraints` is configured. This ensures pods are distributed evenly across zones/availability, improving application high availability.
@@ -1020,7 +1020,7 @@ fullnameOverride: ""    # Replaces Release.Name (has priority)
 ### Example 1: Basic Deploy
 
 ```bash
-helm install deco-mcp-mesh . -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -n deco-studio --create-namespace
 ```
 
 ### Example 2: Deploy with Custom Values
@@ -1050,11 +1050,11 @@ persistence:
 configMap:
   meshConfig:
     NODE_ENV: "production"
-    BASE_URL: "https://mesh.example.com"
+    BASE_URL: "https://studio.example.com"
 ```
 
 ```bash
-helm install deco-mcp-mesh . -f production-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f production-values.yaml -n deco-studio --create-namespace
 ```
 
 ### Example 3: Deploy with Autoscaling
@@ -1077,7 +1077,7 @@ resources:
 ```
 
 ```bash
-helm install deco-mcp-mesh . -f autoscaling-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f autoscaling-values.yaml -n deco-studio --create-namespace
 ```
 
 ### Example 4: Deploy with Existing PVC
@@ -1086,17 +1086,17 @@ helm install deco-mcp-mesh . -f autoscaling-values.yaml -n deco-mcp-mesh --creat
 # existing-pvc-values.yaml
 persistence:
   enabled: true
-  claimName: "existing-mesh-data"  # Name of PVC that already exists in cluster
+  claimName: "existing-studio-data"  # Name of PVC that already exists in cluster
   # When claimName is defined, chart does NOT create a new PVC
   # Only references the specified existing PVC
 ```
 
 ```bash
 # PVC must exist before installing chart
-kubectl get pvc existing-mesh-data -n deco-mcp-mesh
+kubectl get pvc existing-studio-data -n deco-studio
 
 # Install using existing PVC
-helm install deco-mcp-mesh . -f existing-pvc-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f existing-pvc-values.yaml -n deco-studio --create-namespace
 
 # Deployment will be created referencing existing PVC
 # No new PVC will be created by this chart
@@ -1137,7 +1137,7 @@ curl -o sa-east-1-bundle.pem https://truststore.pki.rds.amazonaws.com/sa-east-1/
 cat sa-east-1-bundle.pem
 
 # Install with managed PostgreSQL
-helm install deco-mcp-mesh . -f postgresql-managed-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f postgresql-managed-values.yaml -n deco-studio --create-namespace
 ```
 
 **Note:** This example works for AWS RDS and other managed database providers. For other providers, consult the documentation to obtain the appropriate CA certificate.
@@ -1161,19 +1161,19 @@ resources:
 ```
 
 ```bash
-helm install deco-mcp-mesh . -f dev-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f dev-values.yaml -n deco-studio --create-namespace
 ```
 
 ### Example 7: Deploy with Custom Name
 
 ```bash
 # Uses only release name
-helm install deco-mcp-mesh . -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -n deco-studio --create-namespace
 
 # Or completely override
-helm install deco-mcp-mesh . \
-  --set fullnameOverride=custom-mesh \
-  -n deco-mcp-mesh --create-namespace
+helm install deco-studio . \
+  --set fullnameOverride=custom-studio \
+  -n deco-studio --create-namespace
 ```
 
 ### Example 8: Deploy with Existing Secret
@@ -1190,13 +1190,13 @@ secret:
 
 ```bash
 # Secret must exist before installing chart
-kubectl get secret external-secrets-operator-secret -n deco-mcp-mesh
+kubectl get secret external-secrets-operator-secret -n deco-studio
 
 # Verify it contains necessary keys
-kubectl get secret external-secrets-operator-secret -n deco-mcp-mesh -o jsonpath='{.data}' | jq 'keys'
+kubectl get secret external-secrets-operator-secret -n deco-studio -o jsonpath='{.data}' | jq 'keys'
 
 # Install using existing Secret
-helm install deco-mcp-mesh . -f existing-secret-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f existing-secret-values.yaml -n deco-studio --create-namespace
 
 # Deployment will be created referencing existing Secret
 # No new Secret will be created by this chart
@@ -1221,7 +1221,7 @@ lifecycle:
 ```
 
 ```bash
-helm install deco-mcp-mesh . -f lifecycle-values.yaml -n deco-mcp-mesh --create-namespace
+helm install deco-studio . -f lifecycle-values.yaml -n deco-studio --create-namespace
 ```
 
 **When to use**:
@@ -1241,25 +1241,25 @@ helm install deco-mcp-mesh . -f lifecycle-values.yaml -n deco-mcp-mesh --create-
 vim custom-values.yaml
 
 # Update release
-helm upgrade deco-mcp-mesh . -f custom-values.yaml -n deco-mcp-mesh
+helm upgrade deco-studio . -f custom-values.yaml -n deco-studio
 
 # View history
-helm history deco-mcp-mesh -n deco-mcp-mesh
+helm history deco-studio -n deco-studio
 
 # Rollback
-helm rollback deco-mcp-mesh -n deco-mcp-mesh
+helm rollback deco-studio -n deco-studio
 ```
 
 ### Update Image
 
 ```bash
 # Option 1: Update values.yaml and upgrade
-helm upgrade deco-mcp-mesh . \
+helm upgrade deco-studio . \
   --set image.tag=v1.2.3 \
-  -n deco-mcp-mesh
+  -n deco-studio
 
 # Option 2: If pullPolicy: Always, just restart
-kubectl rollout restart deployment/deco-mcp-mesh -n deco-mcp-mesh
+kubectl rollout restart deployment/deco-studio -n deco-studio
 ```
 
 ### Update ConfigMap/Secret
@@ -1269,28 +1269,28 @@ kubectl rollout restart deployment/deco-mcp-mesh -n deco-mcp-mesh
 vim values.yaml
 
 # Update
-helm upgrade deco-mcp-mesh . -n deco-mcp-mesh
+helm upgrade deco-studio . -n deco-studio
 
 # Restart pods to pick up changes
-kubectl rollout restart deployment/deco-mcp-mesh -n deco-mcp-mesh
+kubectl rollout restart deployment/deco-studio -n deco-studio
 ```
 
 ### Verify Changes Before Applying
 
 ```bash
 # See what will be generated
-helm template deco-mcp-mesh . -n deco-mcp-mesh
+helm template deco-studio . -n deco-studio
 
 # See diff between versions
-helm diff upgrade deco-mcp-mesh . -n deco-mcp-mesh
+helm diff upgrade deco-studio . -n deco-studio
 ```
 
 ### Database Backup - SQLite
 
 ```bash
 # If using PVC
-POD=$(kubectl get pod -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh -o jsonpath='{.items[0].metadata.name}')
-kubectl cp deco-mcp-mesh/$POD:/app/data/mesh.db ./backup-$(date +%Y%m%d).db
+POD=$(kubectl get pod -l app.kubernetes.io/instance=deco-studio -n deco-studio -o jsonpath='{.items[0].metadata.name}')
+kubectl cp deco-studio/$POD:/app/data/mesh.db ./backup-$(date +%Y%m%d).db
 ```
 
 ## Security
@@ -1309,9 +1309,9 @@ secret:
 
 2. **Values via command line**:
 ```bash
-helm install deco-mcp-mesh . \
+helm install deco-studio . \
   --set secret.BETTER_AUTH_SECRET=$(cat secret.txt) \
-  -n deco-mcp-mesh --create-namespace
+  -n deco-studio --create-namespace
 ```
 
 ### Security Context
@@ -1330,13 +1330,13 @@ All resources have standardized labels:
 
 ```bash
 # View all release resources
-kubectl get all -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
+kubectl get all -l app.kubernetes.io/instance=deco-studio -n deco-studio
 
 # View logs
-kubectl logs -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
+kubectl logs -l app.kubernetes.io/instance=deco-studio -n deco-studio
 
 # View metrics
-kubectl top pods -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
+kubectl top pods -l app.kubernetes.io/instance=deco-studio -n deco-studio
 ```
 
 ### Health Checks
@@ -1346,4 +1346,4 @@ kubectl top pods -l app.kubernetes.io/instance=deco-mcp-mesh -n deco-mcp-mesh
 
 ## License
 
-This chart is part of the deco-mcp-mesh project.
+This chart is part of the deco-studio project.
